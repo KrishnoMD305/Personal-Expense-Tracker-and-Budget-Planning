@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Expense Tracker</string>
+    <string name="add_transaction">Add Transaction</string>
+    <string name="balance">Current Balance</string>
+    <string name="income">Income</string>
+    <string name="expense">Expense</string>
+    <string name="history">Transaction History</string>
+    <string name="empty_history">No transactions yet.\nTap + to add your first one.</string>
+    <string name="amount_hint">Amount (৳)</string>
+    <string name="note_hint">Note (optional)</string>
+    <string name="category">Category</string>
+    <string name="date">Date</string>
+    <string name="save">Save Transaction</string>
+    <string name="saved">Transaction saved</string>
+    <string name="err_category">Please select a category</string>
+    <string name="delete_title">Delete transaction?</string>
+    <string name="delete_message">%1$s — %2$s will be permanently removed.</string>
+    <string name="delete">Delete</string>
+    <string name="cd_add">Add transaction</string>
+
+    <string-array name="income_categories">
+        <item>Salary</item>
+        <item>Business</item>
+        <item>Freelance</item>
+        <item>Gift</item>
+        <item>Investment</item>
+        <item>Other Income</item>
+    </string-array>
+    <string-array name="expense_categories">
+        <item>Food</item>
+        <item>Transport</item>
+        <item>Rent</item>
+        <item>Utilities</item>
+        <item>Education</item>
+        <item>Health</item>
+        <item>Shopping</item>
+        <item>Entertainment</item>
+        <item>Other Expense</item>
+    </string-array>
+</resources>
