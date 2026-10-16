@@ -38,16 +38,3 @@ dependencies {
     implementation "androidx.room:room-runtime:$room_version"
     annotationProcessor "androidx.room:room-compiler:$room_version"
 }
-configurations.configureEach {
-    resolutionStrategy.eachDependency {
-        if (requested.group == "org.jetbrains.kotlin" &&
-                requested.name in [
-                "kotlin-stdlib",
-                "kotlin-stdlib-jdk7",
-                "kotlin-stdlib-jdk8"
-        ]) {
-            useVersion "1.8.10"
-            because "Align Kotlin standard library versions"
-        }
-    }
-}
