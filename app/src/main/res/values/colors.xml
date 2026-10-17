@@ -9,4 +9,7 @@
     <color name="income_light">#C8E6C9</color>
     <color name="expense_light">#FFCDD2</color>
     <color name="background">#F5F5F5</color>
+    <color name="warning">#EF6C00</color>
+    <color name="warning_light">#FFE0B2</color>
+    <color name="progress_track">#E0E0E0</color>
 </resources>
