@@ -24,5 +24,11 @@
             android:label="@string/add_transaction"
             android:parentActivityName=".MainActivity"
             android:windowSoftInputMode="adjustResize" />
+
+        <activity
+            android:name=".BudgetActivity"
+            android:exported="false"
+            android:label="@string/budgets"
+            android:parentActivityName=".MainActivity" />
     </application>
 </manifest>
