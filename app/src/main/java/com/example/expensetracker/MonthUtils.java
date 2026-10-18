@@ -53,4 +53,33 @@ public final class MonthUtils {
         f.setTimeZone(TimeZone.getDefault());
         return f.format(startCalendar(key).getTime());
     }
+
+    public static String shortLabel(String key) {
+        SimpleDateFormat f = new SimpleDateFormat("MMM yy", Locale.getDefault());
+        f.setTimeZone(TimeZone.getDefault());
+        return f.format(startCalendar(key).getTime());
+    }
+    public static int monthsBetween(String from, String to) {
+        if (!isValidKey(from) || !isValidKey(to)) {
+            throw new IllegalArgumentException("Invalid month key: " + from + " / " + to);
+        }
+        int a = Integer.parseInt(from.substring(0, 4)) * 12 + Integer.parseInt(from.substring(5));
+        int b = Integer.parseInt(to.substring(0, 4)) * 12 + Integer.parseInt(to.substring(5));
+        return b - a;
+    }
+    public static long startOfDay(long millis) {
+        Calendar c = Calendar.getInstance();
+        c.setTimeInMillis(millis);
+        c.set(Calendar.HOUR_OF_DAY, 0);
+        c.set(Calendar.MINUTE, 0);
+        c.set(Calendar.SECOND, 0);
+        c.set(Calendar.MILLISECOND, 0);
+        return c.getTimeInMillis();
+    }
+    public static long addDays(long millis, int days) {
+        Calendar c = Calendar.getInstance();
+        c.setTimeInMillis(millis);
+        c.add(Calendar.DAY_OF_MONTH, days);
+        return c.getTimeInMillis();
+    }
 }
