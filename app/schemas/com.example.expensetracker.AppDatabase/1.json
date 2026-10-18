@@ -1,0 +1,30 @@
+{
+  "formatVersion": 1,
+  "database": {
+    "version": 1,
+    "identityHash": "fb067b50a0a3b2080e7e44d46aa2b78d",
+    "entities": [
+      {
+        "tableName": "transactions",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `type` TEXT, `amountPaisa` INTEGER NOT NULL, `category` TEXT, `note` TEXT, `dateMillis` INTEGER NOT NULL, `createdAt` INTEGER NOT NULL)",
+        "fields": [
+          {"fieldPath": "id", "columnName": "id", "affinity": "INTEGER", "notNull": true},
+          {"fieldPath": "type", "columnName": "type", "affinity": "TEXT", "notNull": false},
+          {"fieldPath": "amountPaisa", "columnName": "amountPaisa", "affinity": "INTEGER", "notNull": true},
+          {"fieldPath": "category", "columnName": "category", "affinity": "TEXT", "notNull": false},
+          {"fieldPath": "note", "columnName": "note", "affinity": "TEXT", "notNull": false},
+          {"fieldPath": "dateMillis", "columnName": "dateMillis", "affinity": "INTEGER", "notNull": true},
+          {"fieldPath": "createdAt", "columnName": "createdAt", "affinity": "INTEGER", "notNull": true}
+        ],
+        "primaryKey": {"columnNames": ["id"], "autoGenerate": true},
+        "indices": [],
+        "foreignKeys": []
+      }
+    ],
+    "views": [],
+    "setupQueries": [
+      "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'fb067b50a0a3b2080e7e44d46aa2b78d')"
+    ]
+  }
+}
