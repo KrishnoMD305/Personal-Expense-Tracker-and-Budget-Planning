@@ -12,4 +12,16 @@
     <color name="warning">#EF6C00</color>
     <color name="warning_light">#FFE0B2</color>
     <color name="progress_track">#E0E0E0</color>
+    <color name="chart_1">#00897B</color>
+    <color name="chart_2">#F9A825</color>
+    <color name="chart_3">#5C6BC0</color>
+    <color name="chart_4">#EF6C00</color>
+    <color name="chart_5">#8E24AA</color>
+    <color name="chart_6">#039BE5</color>
+    <color name="chart_7">#D81B60</color>
+    <color name="chart_8">#7CB342</color>
+    <color name="chart_9">#6D4C41</color>
+    <color name="chart_10">#546E7A</color>
+    <color name="chart_text">#424242</color>
+    <color name="chart_grid">#E0E0E0</color>
 </resources>
