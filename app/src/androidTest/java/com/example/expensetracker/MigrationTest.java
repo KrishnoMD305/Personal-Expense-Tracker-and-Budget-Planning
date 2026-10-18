@@ -12,8 +12,10 @@ import java.io.IOException;
 
 public class MigrationTest {
     private static final String TEST_DB = "migration-test";
+
     @Rule
     public MigrationTestHelper helper = new MigrationTestHelper(InstrumentationRegistry.getInstrumentation(), AppDatabase.class, java.util.Collections.emptyList(), new FrameworkSQLiteOpenHelperFactory());
+
     @Test
     public void migrate1To2_preservesTransactionsAndCreatesBudgets() throws IOException {
         SupportSQLiteDatabase v1 = helper.createDatabase(TEST_DB, 1);
@@ -28,6 +30,7 @@ public class MigrationTest {
         assertEquals(2, c.getInt(0));
         assertEquals(5125050L, c.getLong(1));
         c.close();
+
         Cursor b = v2.query("SELECT COUNT(*) FROM budgets");
         b.moveToFirst();
         assertEquals(0, b.getInt(0));
@@ -35,5 +38,64 @@ public class MigrationTest {
 
         v2.execSQL("INSERT INTO budgets (monthKey, category, amountPaisa, createdAt) " + "VALUES ('2026-10', 'Food', 300000, 1)");
         v2.close();
+    }
+
+    private static void insertTwoTransactions(SupportSQLiteDatabase db) {
+        db.execSQL("INSERT INTO transactions (id, type, amountPaisa, category, note, dateMillis, createdAt) " + "VALUES (1, 'EXPENSE', 125050, 'Food', 'Lunch', 1760000000000, 1760000000000)");
+        db.execSQL("INSERT INTO transactions (id, type, amountPaisa, category, note, dateMillis, createdAt) " + "VALUES (2, 'INCOME', 5000000, 'Salary', '', 1760000000000, 1760000000000)");
+    }
+
+    private static void assertUserDataIntact(SupportSQLiteDatabase db, boolean expectBudget) {
+        Cursor c = db.query("SELECT COUNT(*), SUM(amountPaisa) FROM transactions");
+        c.moveToFirst();
+        assertEquals(2, c.getInt(0));
+        assertEquals(5125050L, c.getLong(1));
+        c.close();
+        if (expectBudget) {
+            Cursor b = db.query("SELECT amountPaisa FROM budgets WHERE monthKey = '2026-10' AND category = 'Food'");
+            assertEquals(1, b.getCount());
+            b.moveToFirst();
+            assertEquals(300000L, b.getLong(0));
+            b.close();
+        }
+    }
+
+    private static void assertStage4TablesUsable(SupportSQLiteDatabase db) {
+        db.execSQL("PRAGMA foreign_keys = ON");
+        db.execSQL("INSERT INTO savings_goals (id, name, targetPaisa, deadlineMillis, createdAt, archived) " + "VALUES (1, 'Laptop', 10000000, 0, 1, 0)");
+        db.execSQL("INSERT INTO goal_contributions (goalId, amountPaisa, dateMillis, note, createdAt) " + "VALUES (1, 250000, 1, '', 1)");
+        db.execSQL("INSERT INTO recurring_rules (id, type, amountPaisa, category, note, frequency, startDateMillis, " + "endDateMillis, active, nextCheckMillis, createdAt) " + "VALUES (1, 'INCOME', 5000000, 'Salary', '', 'MONTHLY', 1, 0, 1, 1, 1)");
+        db.execSQL("INSERT INTO recurring_postings (ruleId, occurrenceMillis, transactionId, createdAt) VALUES (1, 100, 0, 1)");
+        db.execSQL("INSERT INTO bills (name, amountPaisa, category, dueDateMillis, reminderDaysBefore, paid, paidAt, " + "paymentTransactionId, lastNotifiedDay, createdAt) VALUES ('Power', 450000, 'Utilities', 1, 2, 0, 0, 0, 0, 1)");
+        boolean rejected = false;
+        try {
+            db.execSQL("INSERT INTO recurring_postings (ruleId, occurrenceMillis, transactionId, createdAt) VALUES (1, 100, 0, 1)");
+        } catch (android.database.SQLException e) {
+            rejected = true;
+        }
+        org.junit.Assert.assertTrue("duplicate posting must be rejected", rejected);
+    }
+
+    @Test
+    public void migrate2To3_preservesDataAndCreatesStage4Tables() throws IOException {
+        SupportSQLiteDatabase v2 = helper.createDatabase(TEST_DB, 2);
+        insertTwoTransactions(v2);
+        v2.execSQL("INSERT INTO budgets (monthKey, category, amountPaisa, createdAt) VALUES ('2026-10', 'Food', 300000, 1)");
+        v2.close();
+        SupportSQLiteDatabase v3 = helper.runMigrationsAndValidate(TEST_DB, 3, true, AppDatabase.MIGRATION_2_3);
+        assertUserDataIntact(v3, true);
+        assertStage4TablesUsable(v3);
+        v3.close();
+    }
+
+    @Test
+    public void migrate1To3_chainsBothMigrations() throws IOException {
+        SupportSQLiteDatabase v1 = helper.createDatabase(TEST_DB, 1);
+        insertTwoTransactions(v1);
+        v1.close();
+        SupportSQLiteDatabase v3 = helper.runMigrationsAndValidate(TEST_DB, 3, true, AppDatabase.MIGRATION_1_2, AppDatabase.MIGRATION_2_3);
+        assertUserDataIntact(v3, false);
+        assertStage4TablesUsable(v3);
+        v3.close();
     }
 }
