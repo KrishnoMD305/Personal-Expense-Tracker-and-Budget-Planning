@@ -10,6 +10,12 @@ dependencyResolutionManagement {
     repositories {
         google()
         mavenCentral()
+        maven {
+            url 'https://jitpack.io'
+            content {
+                includeGroupByRegex "com\\.github\\.[Pp]hil[Jj]ay"
+            }
+        }
     }
 }
 rootProject.name = "Personal Expense Tracker and Budget Planning"
