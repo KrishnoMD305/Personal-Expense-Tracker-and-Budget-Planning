@@ -11,22 +11,21 @@ import java.util.List;
 public interface BudgetDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     void upsert(Budget budget);
-
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     void insertAll(List<Budget> budgets);
-
     @Query("DELETE FROM budgets WHERE monthKey = :monthKey AND category = :category")
     void delete(String monthKey, String category);
-
     @Query("SELECT * FROM budgets WHERE monthKey = :monthKey")
     LiveData<List<Budget>> observeForMonth(String monthKey);
-
     @Query("SELECT * FROM budgets WHERE monthKey = :monthKey")
     List<Budget> getForMonth(String monthKey);
 
+    @Query("SELECT * FROM budgets WHERE monthKey >= :fromKey AND monthKey <= :toKey")
+    LiveData<List<Budget>> observeBetweenMonths(String fromKey, String toKey);
+    @Query("SELECT * FROM budgets WHERE monthKey >= :fromKey AND monthKey <= :toKey")
+    List<Budget> getBetweenMonths(String fromKey, String toKey);
     @Query("SELECT COALESCE(SUM(amountPaisa), 0) FROM budgets WHERE monthKey = :monthKey AND category = :overall")
     long overallAmount(String monthKey, String overall);
-
     @Query("SELECT COALESCE(SUM(amountPaisa), 0) FROM budgets WHERE monthKey = :monthKey " + "AND category != :overall AND category != :excludeCategory")
     long sumCategoryBudgetsExcluding(String monthKey, String overall, String excludeCategory);
 }
