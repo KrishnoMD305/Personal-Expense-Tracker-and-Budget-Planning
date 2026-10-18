@@ -61,6 +61,202 @@
     <string name="budget_alert_title">Budget alert</string>
     <string name="cd_budget_progress">Budget progress</string>
 
+    <string name="reports">Reports</string>
+    <string name="rep_open">Reports &amp; insights</string>
+    <string name="rep_mode_month">Month</string>
+    <string name="rep_mode_custom">Custom range</string>
+    <string name="rep_from">From %1$s</string>
+    <string name="rep_to">To %1$s</string>
+    <string name="rep_preset_7">Last 7 days</string>
+    <string name="rep_preset_30">Last 30 days</string>
+    <string name="rep_preset_90">Last 90 days</string>
+    <string name="rep_preset_ytd">This year</string>
+    <string name="rep_pick_from">Start date</string>
+    <string name="rep_pick_to">End date</string>
+    <string name="rep_range_label">%1$s – %2$s</string>
+    <string name="rep_income">Income</string>
+    <string name="rep_expenses">Expenses</string>
+    <string name="rep_net">Net cash flow</string>
+    <string name="rep_savings_rate">Savings rate</string>
+    <string name="rep_summary_meta">%1$d transactions • %2$d days</string>
+    <string name="rep_compare_title">Compared with %1$s</string>
+    <string name="rep_vs">%1$s vs %2$s</string>
+    <string name="rep_category_title">Expenses by category</string>
+    <string name="rep_top_categories">Top expense categories</string>
+    <string name="rep_category_sub">%1$s of spending • %2$d transactions</string>
+    <string name="rep_vs_previous">%1$s vs previous</string>
+    <string name="rep_bar_title">Income vs expenses by month</string>
+    <string name="rep_bar_truncated">Charting the latest %1$d of %2$d months in this range.</string>
+    <string name="rep_monthly_summary">Monthly summary</string>
+    <string name="rep_month_sub">Income %1$s • Expenses %2$s • Savings rate %3$s</string>
+    <string name="rep_trend_day">Spending trend (daily)</string>
+    <string name="rep_trend_week">Spending trend (weekly)</string>
+    <string name="rep_trend_month">Spending trend (monthly)</string>
+    <string name="rep_insights">Insights</string>
+    <string name="rep_largest_title">Largest transactions</string>
+    <string name="rep_largest_expenses">Largest expenses</string>
+    <string name="rep_largest_income">Largest income</string>
+    <string name="rep_budget_title">Budget vs actual</string>
+    <string name="rep_budget_unsupported">Budget comparison needs whole calendar months. Choose a month, or a range that starts on the 1st of a month and ends on the last day of a month.</string>
+    <string name="rep_budget_none">No budgets were set for this period. You can set them under Budgets.</string>
+    <string name="rep_budget_multi_note">Each budget is compared with spending in the months where it was set (%1$d months have budgets).</string>
+    <string name="rep_no_data">No transactions in this period.\nPick another period, or add transactions from the home screen.</string>
+    <string name="rep_load_error">Could not build this report. Please try again.</string>
+    <string name="rep_chart_no_data">No data for this period</string>
+    <string name="rep_center_total">Expenses\n%1$s</string>
+    <string name="rep_center_selected">%1$s\n%2$s\n%3$s</string>
+    <string name="cd_pie_chart">Pie chart of expenses by category</string>
+    <string name="cd_bar_chart">Bar chart of income and expenses by month</string>
+    <string name="cd_line_chart">Line chart of spending over time</string>
+    <string name="cd_report_progress">Loading report</string>
+
+    <string name="clear">Clear</string>
+    <plurals name="days_count">
+        <item quantity="one">%d day</item>
+        <item quantity="other">%d days</item>
+    </plurals>
+    <plurals name="bills_count">
+        <item quantity="one">%d bill</item>
+        <item quantity="other">%d bills</item>
+    </plurals>
+    <string name="dash_today">today</string>
+    <string name="dash_in">in %1$s</string>
+    <string name="dash_overdue_by">overdue by %1$s</string>
+
+    <string name="dash_goals_title">Savings goals</string>
+    <string name="dash_goals_none">No savings goals yet. Tap to create one.</string>
+    <string name="dash_goals_all_archived">All goals are archived. Tap to manage them.</string>
+    <string name="dash_goals_line1">%1$s saved of %2$s • %3$d goals (%4$d reached)</string>
+    <string name="dash_goals_next">Next deadline: %1$s • %2$s (%3$s)</string>
+    <string name="dash_goals_all_done">All goals reached</string>
+    <string name="dash_goals_no_deadlines">No deadlines set</string>
+    <string name="dash_recurring_title">Recurring transactions</string>
+    <string name="dash_recurring_none">No recurring transactions. Tap to set one up.</string>
+    <string name="dash_recurring_badge">%1$d active</string>
+    <string name="dash_recurring_badge_paused">%1$d active • %2$d paused</string>
+    <string name="dash_recurring_next">Next: %1$s • %2$s • %3$s</string>
+    <string name="dash_recurring_no_next">Nothing scheduled ahead</string>
+    <string name="dash_recurring_forecast">Next %1$d days: %2$s income • %3$s expenses</string>
+    <string name="dash_bills_title">Bills</string>
+    <string name="dash_bills_none">No bills yet. Tap to add one.</string>
+    <string name="dash_bills_all_paid">All bills are paid</string>
+    <string name="dash_bills_badge_overdue">%1$d overdue</string>
+    <string name="dash_bills_badge_soon">%1$d due soon</string>
+    <string name="dash_bills_overdue">Overdue: %1$s • %2$s</string>
+    <string name="dash_bills_no_overdue">No overdue bills</string>
+    <string name="dash_bills_soon">Due in the next %1$d days: %2$s • %3$s</string>
+    <string name="dash_bills_next">Next: %1$s • %2$s • %3$s</string>
+
+    <string name="goals">Savings goals</string>
+    <string name="goals_intro">Set a target, add contributions, and watch the progress bar fill. Contributions are tracked separately and do not change your balance.</string>
+    <string name="goals_empty">No savings goals yet.\nTap + to create your first one.</string>
+    <string name="goals_active">Active goals</string>
+    <string name="goals_archived">Archived</string>
+    <string name="goal_new">New savings goal</string>
+    <string name="goal_edit">Edit savings goal</string>
+    <string name="goal_name_hint">Goal name (e.g. Laptop)</string>
+    <string name="goal_target_hint">Target amount (৳)</string>
+    <string name="goal_deadline">Deadline (optional)</string>
+    <string name="goal_no_deadline">No deadline</string>
+    <string name="goal_saved">Goal saved</string>
+    <string name="goal_not_found">This goal no longer exists</string>
+    <string name="goal_completed">Reached ✓</string>
+    <string name="goal_saved_of">%1$s saved of %2$s</string>
+    <string name="goal_remaining">%1$s to go</string>
+    <string name="goal_reached">Target reached. Well done!</string>
+    <string name="goal_reached_over">Target reached, %1$s above the goal.</string>
+    <string name="goal_deadline_plain">Deadline %1$s</string>
+    <string name="goal_deadline_left">Deadline %1$s • %2$s left</string>
+    <string name="goal_deadline_today">Deadline %1$s • due today</string>
+    <string name="goal_deadline_overdue">Deadline %1$s • passed %2$s ago</string>
+    <string name="goal_suggest_monthly">Save about %1$s a month to reach it in time</string>
+    <string name="goal_add_contribution">Add contribution</string>
+    <string name="goal_contribution_added">Contribution added</string>
+    <string name="goal_history">Contribution history</string>
+    <string name="goal_history_empty">No contributions yet.\nTap “Add contribution” to record your first one.</string>
+    <string name="goal_archive">Archive</string>
+    <string name="goal_restore">Restore</string>
+    <string name="goal_archived_toast">Goal archived</string>
+    <string name="goal_restored_toast">Goal restored</string>
+    <string name="goal_delete_title">Delete this goal?</string>
+    <string name="goal_delete_message">“%1$s” and its contribution history will be permanently removed.</string>
+    <string name="goal_delete_contribution_title">Delete contribution?</string>
+    <string name="goal_delete_contribution_message">%1$s on %2$s will be removed from this goal.</string>
+    <string name="cd_goal_progress">Savings goal progress</string>
+
+    <string name="recurring">Recurring transactions</string>
+    <string name="rec_intro">Scheduled income and expenses are added to your history automatically on their due date. Each date is only ever added once.</string>
+    <string name="rec_empty">No recurring transactions yet.\nTap + to schedule one (salary, rent, subscriptions...).</string>
+    <string name="rec_active">Active</string>
+    <string name="rec_paused">Paused</string>
+    <string name="rec_new">New recurring transaction</string>
+    <string name="rec_edit">Edit recurring transaction</string>
+    <string name="rec_repeats">Repeats</string>
+    <string name="rec_start">Start date</string>
+    <string name="rec_end">End date (optional)</string>
+    <string name="rec_no_end">No end date</string>
+    <string name="rec_saved">Recurring transaction saved</string>
+    <string name="rec_from">from %1$s</string>
+    <string name="rec_until">until %1$s</string>
+    <string name="rec_next">Next: %1$s</string>
+    <string name="rec_finished">No further occurrences</string>
+    <string name="rec_paused_note">Paused: nothing is added until you resume</string>
+    <string name="rec_pause">Pause</string>
+    <string name="rec_resume">Resume</string>
+    <string name="rec_delete_title">Delete this schedule?</string>
+    <string name="rec_delete_message">No new transactions will be created. Transactions it already added stay in your history.</string>
+    <string name="freq_daily">Daily</string>
+    <string name="freq_weekly">Weekly</string>
+    <string name="freq_monthly">Monthly</string>
+    <string-array name="frequency_labels">
+        <item>Daily</item>
+        <item>Weekly</item>
+        <item>Monthly</item>
+    </string-array>
+
+    <string name="bills">Bills</string>
+    <string name="bills_intro">Add bills with a due date and a reminder. Unpaid bills past their due date are shown as overdue.</string>
+    <string name="bills_empty">No bills yet.\nTap + to add your first bill.</string>
+    <string name="bills_overdue">Overdue (%1$d)</string>
+    <string name="bills_upcoming">Upcoming (%1$d)</string>
+    <string name="bills_paid">Paid (%1$d)</string>
+    <string name="bill_new">New bill</string>
+    <string name="bill_edit">Edit bill</string>
+    <string name="bill_name_hint">Bill name (e.g. Electricity)</string>
+    <string name="bill_due_date">Due date</string>
+    <string name="bill_remind_me">Remind me</string>
+    <string name="bill_saved">Bill saved</string>
+    <string name="bill_due_in">Due %1$s • in %2$s</string>
+    <string name="bill_due_today">Due %1$s • today</string>
+    <string name="bill_due_overdue">Due %1$s • overdue by %2$s</string>
+    <string name="bill_paid_on">Paid on %1$s</string>
+    <string name="bill_paid_on_expense">Paid on %1$s • recorded as an expense</string>
+    <string name="bill_mark_paid">Mark as paid</string>
+    <string name="bill_mark_paid_title">Mark “%1$s” as paid</string>
+    <string name="bill_record_expense">Also record %1$s as an expense today</string>
+    <string name="bill_marked_paid">Bill marked as paid</string>
+    <string name="bill_mark_unpaid">Mark as unpaid</string>
+    <string name="bill_unpaid_message">The bill will move back to your unpaid list.</string>
+    <string name="bill_unpaid_message_expense">The bill moves back to your unpaid list and the expense recorded when you paid it is removed.</string>
+    <string name="bill_delete_title">Delete this bill?</string>
+    <string name="bill_delete_message">“%1$s” will be permanently removed. An expense recorded when it was paid stays in your history.</string>
+    <string-array name="reminder_labels">
+        <item>On the due date</item>
+        <item>1 day before</item>
+        <item>2 days before</item>
+        <item>3 days before</item>
+        <item>1 week before</item>
+    </string-array>
+
+    <string name="channel_bills_name">Bill reminders</string>
+    <string name="channel_bills_desc">Reminders for bills that are due soon or overdue</string>
+    <string name="notif_due_in">Due in %1$s • %2$s</string>
+    <string name="notif_due_today">Due today • %1$s</string>
+    <string name="notif_overdue">Overdue by %1$s • %2$s</string>
+    <string name="notif_banner_text">Bill reminders are off. Turn on notifications to get them.</string>
+    <string name="notif_enable">Turn on</string>
+    <string name="notif_denied">Notifications stay off. You can enable them later from this screen.</string>
+
     <string-array name="income_categories">
         <item>Salary</item>
         <item>Business</item>
