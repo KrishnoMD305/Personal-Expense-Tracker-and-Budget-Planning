@@ -1,0 +1,82 @@
+package com.example.expensetracker;
+
+import android.Manifest;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
+import android.content.Context;
+import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.os.Build;
+import androidx.core.app.NotificationCompat;
+import androidx.core.app.NotificationManagerCompat;
+import androidx.core.content.ContextCompat;
+
+public final class NotificationHelper {
+    public static final String CHANNEL_BILLS = "bill_reminders";
+
+    private NotificationHelper() {}
+
+    public static void ensureChannel(Context context) {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return;
+        NotificationChannel channel = new NotificationChannel(CHANNEL_BILLS, context.getString(R.string.channel_bills_name), NotificationManager.IMPORTANCE_DEFAULT);
+        channel.setDescription(context.getString(R.string.channel_bills_desc));
+        NotificationManager nm = context.getSystemService(NotificationManager.class);
+        if (nm != null) nm.createNotificationChannel(channel);
+    }
+    public static boolean hasPermission(Context context) {
+        return Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU
+                || ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS)
+                == PackageManager.PERMISSION_GRANTED;
+    }
+
+    public static boolean canNotify(Context context) {
+        return hasPermission(context) && NotificationManagerCompat.from(context).areNotificationsEnabled();
+    }
+
+    public static boolean notifyBill(Context context, Bill bill, long todayStart) {
+        if (!canNotify(context)) return false;
+        ensureChannel(context);
+        String money = MoneyUtils.format(bill.amountPaisa);
+        int days = BillCalculator.daysUntilDue(bill, todayStart);
+        String text;
+        switch (BillCalculator.state(bill, todayStart)) {
+            case OVERDUE:
+                text = context.getString(R.string.notif_overdue, daysText(context, -days), money);
+                break;
+            case DUE_TODAY:
+                text = context.getString(R.string.notif_due_today, money);
+                break;
+            default:
+                text = context.getString(R.string.notif_due_in, daysText(context, days), money);
+                break;
+        }
+        Intent open = new Intent(context, BillsActivity.class)
+                .setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        PendingIntent pi = PendingIntent.getActivity(context, (int) bill.id, open,
+                PendingIntent.FLAG_IMMUTABLE | PendingIntent.FLAG_UPDATE_CURRENT);
+        NotificationCompat.Builder b = new NotificationCompat.Builder(context, CHANNEL_BILLS)
+                .setSmallIcon(R.drawable.ic_notification)
+                .setContentTitle(bill.name)
+                .setContentText(text)
+                .setStyle(new NotificationCompat.BigTextStyle().bigText(text))
+                .setCategory(NotificationCompat.CATEGORY_REMINDER)
+                .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+                .setContentIntent(pi)
+                .setAutoCancel(true);
+        try {
+            NotificationManagerCompat.from(context).notify((int) bill.id, b.build());
+            return true;
+        } catch (SecurityException e) {
+            return false;
+        }
+    }
+
+    public static void cancelBill(Context context, long billId) {
+        NotificationManagerCompat.from(context).cancel((int) billId);
+    }
+
+    static String daysText(Context context, int days) {
+        return context.getResources().getQuantityString(R.plurals.days_count, days, days);
+    }
+}
