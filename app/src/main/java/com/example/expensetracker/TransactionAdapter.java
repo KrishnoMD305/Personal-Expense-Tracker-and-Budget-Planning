@@ -4,11 +4,13 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+
 import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.ListAdapter;
 import androidx.recyclerview.widget.RecyclerView;
+
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
@@ -19,6 +21,7 @@ public class TransactionAdapter extends ListAdapter<Transaction, TransactionAdap
     public interface OnItemClick {
         void onClick(Transaction transaction);
     }
+
     public interface OnItemLongClick {
         void onLongClick(Transaction transaction);
     }
@@ -27,18 +30,24 @@ public class TransactionAdapter extends ListAdapter<Transaction, TransactionAdap
     private final OnItemLongClick listener;
     private final SimpleDateFormat dateFormat = new SimpleDateFormat("dd MMM yyyy", Locale.getDefault());
 
+    /** Stage 1 constructor (long-press only), kept for compatibility. */
     public TransactionAdapter(OnItemLongClick listener) {
         this(null, listener);
     }
+
+    /** Stage 2: tap to edit, long-press for edit/delete options. */
     public TransactionAdapter(OnItemClick clickListener, OnItemLongClick listener) {
         super(new DiffUtil.ItemCallback<Transaction>() {
             @Override
             public boolean areItemsTheSame(@NonNull Transaction a, @NonNull Transaction b) {
                 return a.id == b.id;
             }
+
             @Override
             public boolean areContentsTheSame(@NonNull Transaction a, @NonNull Transaction b) {
-                return a.amountPaisa == b.amountPaisa && a.dateMillis == b.dateMillis && Objects.equals(a.type, b.type) && Objects.equals(a.category, b.category) && Objects.equals(a.note, b.note);
+                return a.amountPaisa == b.amountPaisa && a.dateMillis == b.dateMillis
+                        && Objects.equals(a.type, b.type) && Objects.equals(a.category, b.category)
+                        && Objects.equals(a.note, b.note);
             }
         });
         this.clickListener = clickListener;
@@ -60,7 +69,8 @@ public class TransactionAdapter extends ListAdapter<Transaction, TransactionAdap
         h.details.setText(dateFormat.format(new Date(t.dateMillis)) + note);
         String sign = t.isIncome() ? "+" : "-";
         h.amount.setText(sign + MoneyUtils.format(t.amountPaisa));
-        h.amount.setTextColor(ContextCompat.getColor(h.itemView.getContext(), t.isIncome() ? R.color.income : R.color.expense));
+        h.amount.setTextColor(ThemeColors.get(h.itemView.getContext(),
+                t.isIncome() ? R.attr.etIncome : R.attr.etExpense));
         h.itemView.setOnClickListener(clickListener == null ? null : v -> clickListener.onClick(t));
         h.itemView.setOnLongClickListener(v -> {
             listener.onLongClick(t);
@@ -70,6 +80,7 @@ public class TransactionAdapter extends ListAdapter<Transaction, TransactionAdap
 
     static class VH extends RecyclerView.ViewHolder {
         final TextView category, details, amount;
+
         VH(@NonNull View v) {
             super(v);
             category = v.findViewById(R.id.itemCategory);

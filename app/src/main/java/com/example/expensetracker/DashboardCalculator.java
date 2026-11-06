@@ -2,20 +2,34 @@ package com.example.expensetracker;
 
 import java.util.List;
 
+/**
+ * Pure calculations behind the three Stage 4 dashboard sections (savings goals, recurring
+ * transactions, bills). Everything is computed from the lists passed in plus "today", so the
+ * numbers are the same on the dashboard and on the detail screens and are easy to unit test.
+ */
 public final class DashboardCalculator {
+    /** Look-ahead used for the recurring forecast and "due soon" bills. */
     public static final int FORECAST_DAYS = 30;
     public static final int DUE_SOON_DAYS = 7;
     private static final int OCCURRENCE_LIMIT = 400;
 
     private DashboardCalculator() {}
+
+    // ------------------------------------------------------------------------------ goals
+
     public static final class GoalsSummary {
+        /** Goals that are not archived. */
         public int activeCount;
+        /** Non-archived goals that reached their target. */
         public int completedCount;
         public int overdueCount;
         public long totalTargetPaisa;
+        /** Everything saved towards the counted goals (can exceed the target). */
         public long totalSavedPaisa;
+        /** 0..100 rounded down; each goal counts at most its own target, so one over-funded goal cannot hide another. */
         public int progress;
         public String percentText = "0.0";
+        /** Incomplete goal with the earliest deadline (overdue ones come first); null if none. */
         public SavingsGoal nextDeadlineGoal;
         public int nextDeadlineDays;
 
@@ -53,10 +67,12 @@ public final class DashboardCalculator {
         return s;
     }
 
+    // -------------------------------------------------------------------------- recurring
 
     public static final class RecurringSummary {
         public int activeCount;
         public int pausedCount;
+        /** Income / expense that the active rules will create from tomorrow through the next 30 days. */
         public long upcomingIncomePaisa;
         public long upcomingExpensePaisa;
         public int upcomingCount;
@@ -68,6 +84,10 @@ public final class DashboardCalculator {
         }
     }
 
+    /**
+     * Today's occurrence is created by the scheduler (it runs when the app opens and whenever a rule is
+     * saved), so the forecast starts tomorrow: counting today as well would double count it.
+     */
     public static RecurringSummary recurring(List<RecurringRule> rules, long todayStart) {
         RecurringSummary s = new RecurringSummary();
         if (rules == null) return s;
@@ -96,13 +116,17 @@ public final class DashboardCalculator {
         return s;
     }
 
+    // ------------------------------------------------------------------------------ bills
+
     public static final class BillsSummary {
         public int unpaidCount;
         public long unpaidTotalPaisa;
         public int overdueCount;
         public long overdueTotalPaisa;
+        /** Unpaid bills due from today up to (not including) today + 7 days. */
         public int dueSoonCount;
         public long dueSoonTotalPaisa;
+        /** Unpaid bill with the earliest due day that is today or later; null if none. */
         public Bill nextBill;
         public int nextBillDays;
 

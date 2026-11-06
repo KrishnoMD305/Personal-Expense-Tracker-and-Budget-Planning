@@ -1,9 +1,12 @@
 package com.example.expensetracker;
 
 import android.content.Context;
+
 import androidx.lifecycle.LiveData;
+
 import java.util.List;
 
+/** Bills: due dates, paid / unpaid status, and the optional matching expense transaction. */
 public final class BillRepository {
     private static final String FAILED = "Could not save. Please try again.";
 
@@ -13,7 +16,9 @@ public final class BillRepository {
         return AppDatabase.getInstance(context).billDao().observeAll();
     }
 
-    public static void save(Context context, long id, String name, long amountPaisa, String category, long dueMillis, int reminderDays, PlanCallback callback) {
+    /** Creates a bill (id == 0) or edits an unpaid one. */
+    public static void save(Context context, long id, String name, long amountPaisa, String category,
+                            long dueMillis, int reminderDays, PlanCallback callback) {
         AppDatabase db = AppDatabase.getInstance(context);
         final String cleanName = name == null ? "" : name.trim();
         PlanCallback.run(callback, () -> db.runInTransaction(() -> {
@@ -47,6 +52,10 @@ public final class BillRepository {
         }), FAILED);
     }
 
+    /**
+     * Marks the bill paid. With {@code recordExpense} an expense transaction (today's date) is created
+     * in the same database transaction and remembered, so that "mark unpaid" can remove it again.
+     */
     public static void markPaid(Context context, long id, boolean recordExpense, PlanCallback callback) {
         AppDatabase db = AppDatabase.getInstance(context);
         final Context app = context.getApplicationContext();
@@ -54,7 +63,7 @@ public final class BillRepository {
             String err = db.runInTransaction(() -> {
                 Bill b = db.billDao().getById(id);
                 if (b == null) return "This bill no longer exists";
-                if (b.paid) return null;
+                if (b.paid) return null; // already paid: nothing to do, never a second expense
                 long now = System.currentTimeMillis();
                 long txId = 0;
                 if (recordExpense) {
@@ -78,6 +87,7 @@ public final class BillRepository {
         }, FAILED);
     }
 
+    /** Back to unpaid; removes the expense transaction that "mark paid" created (if it still exists). */
     public static void markUnpaid(Context context, long id, PlanCallback callback) {
         AppDatabase db = AppDatabase.getInstance(context);
         PlanCallback.run(callback, () -> db.runInTransaction(() -> {
@@ -93,6 +103,8 @@ public final class BillRepository {
             return null;
         }), FAILED);
     }
+
+    /** Deletes the bill; an expense recorded when it was paid stays in the history. */
     public static void delete(Context context, long id, PlanCallback callback) {
         AppDatabase db = AppDatabase.getInstance(context);
         final Context app = context.getApplicationContext();

@@ -1,21 +1,26 @@
 package com.example.expensetracker;
+
 import java.util.Objects;
 
+/** One display row (or section header) for the Stage 4 list screens. */
 public final class PlanRow {
     public static final int HEADER = 0;
     public static final int ITEM = 1;
     public static final int NO_PROGRESS = -1;
 
     public final int type;
+    /** Stable key for diffing, e.g. "goal:5". */
     public final String key;
     public final String title;
     public final String trailing;
     public final int trailingColor;
     public final String line1;
     public final String line2;
+    /** 0..100, or {@link #NO_PROGRESS} to hide the bar. */
     public final int progress;
     public final int progressColor;
     public final boolean dim;
+    /** The model object (goal, rule, bill, contribution) handed back to click listeners. */
     public final Object tag;
 
     private PlanRow(int type, String key, String title, String trailing, int trailingColor, String line1,

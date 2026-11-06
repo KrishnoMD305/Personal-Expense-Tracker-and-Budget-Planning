@@ -15,18 +15,42 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TimeZone;
 
+/**
+ * Pure report maths (no Android dependencies). Turns raw transactions and budgets into the
+ * {@link ReportData} shown on the Reports screen.
+ *
+ * <p>Rules: amounts are whole paisa ({@code long}); only {@code INCOME} and {@code EXPENSE}
+ * transactions are counted; a transaction belongs to a period when its date lies in
+ * {@code [start, end)}; ratios are rounded half-up to one decimal place using {@link BigDecimal};
+ * no API above Android API 23 is used.
+ */
 public final class ReportCalculator {
     public static final String UNCATEGORIZED = "Uncategorized";
+    /** Months charted when a single month is selected: the selected month and the five before it. */
     public static final int MONTH_MODE_BAR_MONTHS = 6;
+    /** Upper limit for the number of months charted for a custom range (the latest ones win). */
     public static final int MAX_BAR_MONTHS = 12;
     public static final int TOP_EXPENSES = 5;
     public static final int TOP_INCOMES = 3;
+    /** Trend buckets: daily up to this many days, weekly up to {@link #WEEKLY_TREND_MAX_DAYS}, else monthly. */
     static final int DAILY_TREND_MAX_DAYS = 45;
     static final int WEEKLY_TREND_MAX_DAYS = 400;
+
     private static final double DAY_MS = 24d * 60 * 60 * 1000;
+
     private ReportCalculator() {}
 
-    public static ReportData build(ReportPeriod period, List<Transaction> all, List<Budget> budgets, long nowMillis) {
+    /**
+     * @param period    the period to report on
+     * @param all       transactions that may be used: at least everything dated in the period, the
+     *                  previous period and (for a month) the five months before it. Anything else is
+     *                  ignored, so passing too many rows is harmless.
+     * @param budgets   budgets for the months covered by the period (others are ignored)
+     * @param nowMillis the current time; decides which days count as "elapsed" so that a month in
+     *                  progress is not reported as if its remaining days had zero spending
+     */
+    public static ReportData build(ReportPeriod period, List<Transaction> all, List<Budget> budgets,
+                                   long nowMillis) {
         ReportPeriod prev = period.previous();
 
         List<Transaction> cur = new ArrayList<>();
@@ -47,6 +71,7 @@ public final class ReportCalculator {
 
         List<ReportData.CategorySlice> categories = buildCategories(cur, prv, curSummary.expensePaisa);
 
+        // ---- month-by-month bars
         ReportPeriod.Type type = period.type;
         long barStart;
         long barEnd = period.endMillis;
@@ -70,9 +95,11 @@ public final class ReportCalculator {
         }
         List<ReportData.MonthBar> bars = buildBars(valid, firstKey, lastKey, barStart, barEnd);
 
+        // ---- spending trend
         ReportData.Granularity granularity = granularityFor(period.dayCount());
         List<ReportData.TrendPoint> trend = buildTrend(period, cur, granularity, nowMillis);
 
+        // ---- largest transactions
         List<Transaction> expensesDesc = new ArrayList<>();
         List<Transaction> incomesDesc = new ArrayList<>();
         for (Transaction t : cur) {
@@ -86,6 +113,7 @@ public final class ReportCalculator {
         List<Transaction> largestIncome = new ArrayList<>(
                 incomesDesc.subList(0, Math.min(TOP_INCOMES, incomesDesc.size())));
 
+        // ---- category movers vs previous period (only meaningful if the previous period had spending)
         ReportData.CategoryChange biggestIncrease = null;
         ReportData.CategoryChange biggestDecrease = null;
         if (prevSummary.expensePaisa > 0) {
@@ -112,6 +140,7 @@ public final class ReportCalculator {
             }
         }
 
+        // ---- averages, projection, busiest day
         int dayCount = period.dayCount();
         int elapsed = elapsedDays(period, nowMillis);
         long tomorrowStart = MonthUtils.startOfDay(MonthUtils.addDays(MonthUtils.startOfDay(nowMillis), 1));
@@ -152,6 +181,11 @@ public final class ReportCalculator {
                 topDayPaisa, insights, budget);
     }
 
+    /**
+     * First instant of the data {@link #build} needs for {@code period}. The last instant needed is
+     * {@code period.endMillis}. This covers the previous period (for comparisons) and, for a month,
+     * the five months behind it (for the bar chart), so a repository can load exactly this window.
+     */
     public static long dataWindowStart(ReportPeriod period) {
         long prevStart = period.previous().startMillis;
         if (period.type == ReportPeriod.Type.MONTH) {
@@ -160,6 +194,8 @@ public final class ReportCalculator {
         }
         return prevStart;
     }
+
+    // ------------------------------------------------------------------------------ totals
 
     static boolean isCounted(Transaction t) {
         return t.isIncome() || Transaction.TYPE_EXPENSE.equals(t.type);
@@ -186,10 +222,13 @@ public final class ReportCalculator {
                 savingsRateTenths(income, expense));
     }
 
+    /** (income - expense) / income in tenths of a percent, half-up; null when income is 0. */
     public static Long savingsRateTenths(long incomePaisa, long expensePaisa) {
         if (incomePaisa <= 0) return null;
         return ratioTenths(incomePaisa - expensePaisa, incomePaisa);
     }
+
+    /** part / whole as tenths of a percent, rounded half-up (away from zero on ties). whole must not be 0. */
     public static long ratioTenths(long part, long whole) {
         if (whole == 0) throw new ArithmeticException("whole is zero");
         return BigDecimal.valueOf(part).multiply(BigDecimal.valueOf(1000))
@@ -197,6 +236,10 @@ public final class ReportCalculator {
                 .multiply(BigDecimal.valueOf(whole < 0 ? -1 : 1)).longValue();
     }
 
+    /**
+     * Change from {@code previous} to {@code current} as tenths of a percent of |previous|;
+     * null when previous is 0 (a percentage would be meaningless).
+     */
     public static Long changeTenths(long current, long previous) {
         if (previous == 0) return null;
         return BigDecimal.valueOf(current - previous).multiply(BigDecimal.valueOf(1000))
@@ -208,11 +251,15 @@ public final class ReportCalculator {
                 .divide(BigDecimal.valueOf(denominator), 0, RoundingMode.HALF_UP).longValue();
     }
 
+    // ------------------------------------------------------------------------------ categories
+
     static String normalize(String category) {
         return category == null || category.trim().isEmpty() ? UNCATEGORIZED : category;
     }
 
-    private static List<ReportData.CategorySlice> buildCategories(List<Transaction> cur, List<Transaction> prv, long totalExpense) {
+    private static List<ReportData.CategorySlice> buildCategories(List<Transaction> cur,
+                                                                  List<Transaction> prv,
+                                                                  long totalExpense) {
         Map<String, Long> amount = new HashMap<>();
         Map<String, Integer> count = new HashMap<>();
         for (Transaction t : cur) {
@@ -243,12 +290,15 @@ public final class ReportCalculator {
         return out;
     }
 
+    // ------------------------------------------------------------------------------ bars
+
     private static String clampedShift(String key, int delta) {
         String k = MonthUtils.shift(key, delta);
         return MonthUtils.isValidKey(k) ? k : "1970-01";
     }
 
-    private static List<ReportData.MonthBar> buildBars(List<Transaction> valid, String firstKey, String lastKey, long from, long to) {
+    private static List<ReportData.MonthBar> buildBars(List<Transaction> valid, String firstKey,
+                                                       String lastKey, long from, long to) {
         int months = MonthUtils.monthsBetween(firstKey, lastKey) + 1;
         long[] income = new long[months];
         long[] expense = new long[months];
@@ -267,12 +317,15 @@ public final class ReportCalculator {
         return bars;
     }
 
+    // ------------------------------------------------------------------------------ trend
+
     static ReportData.Granularity granularityFor(int dayCount) {
         if (dayCount <= DAILY_TREND_MAX_DAYS) return ReportData.Granularity.DAY;
         if (dayCount <= WEEKLY_TREND_MAX_DAYS) return ReportData.Granularity.WEEK;
         return ReportData.Granularity.MONTH;
     }
 
+    /** Bucket boundaries: bucket i covers [bounds[i], bounds[i+1]); first is the start, last the end. */
     static long[] bucketBounds(ReportPeriod p, ReportData.Granularity g) {
         List<Long> b = new ArrayList<>();
         b.add(p.startMillis);
@@ -316,7 +369,7 @@ public final class ReportCalculator {
         dayFormat.setTimeZone(TimeZone.getDefault());
         List<ReportData.TrendPoint> out = new ArrayList<>();
         for (int i = 0; i < n; i++) {
-            if (bounds[i] > now) break;
+            if (bounds[i] > now) break; // buckets that have not started yet are not "zero spending"
             String label = g == ReportData.Granularity.MONTH
                     ? MonthUtils.shortLabel(MonthUtils.keyOf(bounds[i]))
                     : dayFormat.format(new java.util.Date(bounds[i]));
@@ -325,6 +378,7 @@ public final class ReportCalculator {
         return out;
     }
 
+    /** Number of days of the period that have started as of {@code now} (today counts). */
     static int elapsedDays(ReportPeriod p, long now) {
         if (now < p.startMillis) return 0;
         if (now >= p.endMillis) return p.dayCount();
@@ -332,6 +386,8 @@ public final class ReportCalculator {
         long days = Math.round((today - p.startMillis) / DAY_MS) + 1;
         return (int) Math.min(p.dayCount(), days);
     }
+
+    // ------------------------------------------------------------------------------ budgets
 
     private static ReportData.BudgetReport buildBudgets(ReportPeriod period, List<Budget> budgets,
                                                         List<Transaction> cur) {
@@ -360,6 +416,7 @@ public final class ReportCalculator {
             }
         }
 
+        // Spending per month and category, using the same exact category text Stage 2 budgets use.
         Map<String, Long> totalByMonth = new HashMap<>();
         Map<String, Map<String, Long>> spentByMonth = new HashMap<>();
         for (Transaction t : cur) {
@@ -406,6 +463,7 @@ public final class ReportCalculator {
         Collections.sort(categoryRows, new Comparator<ReportData.BudgetRow>() {
             @Override
             public int compare(ReportData.BudgetRow a, ReportData.BudgetRow b) {
+                // most-used budget first; exact comparison of spent/budget without floating point
                 BigDecimal ra = BigDecimal.valueOf(a.status.spentPaisa)
                         .multiply(BigDecimal.valueOf(b.status.budgetPaisa));
                 BigDecimal rb = BigDecimal.valueOf(b.status.spentPaisa)
@@ -417,6 +475,8 @@ public final class ReportCalculator {
         rows.addAll(categoryRows);
         return new ReportData.BudgetReport(true, rows, monthsWithBudget.size());
     }
+
+    // ------------------------------------------------------------------------------ insights
 
     private static List<String> buildInsights(ReportPeriod period, String previousLabel,
                                               ReportData.Summary cur, ReportData.Summary prev,
@@ -480,6 +540,9 @@ public final class ReportCalculator {
         return out;
     }
 
+    // ------------------------------------------------------------------------------ helpers
+
+    /** Largest amount first; ties: most recent date, then highest id, so the order is deterministic. */
     private static final Comparator<Transaction> LARGEST_FIRST = new Comparator<Transaction>() {
         @Override
         public int compare(Transaction a, Transaction b) {

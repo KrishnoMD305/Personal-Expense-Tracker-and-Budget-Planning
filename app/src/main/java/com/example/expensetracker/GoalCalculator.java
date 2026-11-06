@@ -3,11 +3,16 @@ package com.example.expensetracker;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 
+/** Pure savings-goal maths (no Android, no database). */
 public final class GoalCalculator {
     private static final BigDecimal HUNDRED = BigDecimal.valueOf(100);
 
     private GoalCalculator() {}
 
+    /**
+     * @param deadlineMillis start of the deadline day, or 0 for none
+     * @param todayStart     start of today
+     */
     public static GoalStatus status(long targetPaisa, long savedPaisa, long deadlineMillis, long todayStart) {
         long saved = Math.max(0, savedPaisa);
         long target = Math.max(0, targetPaisa);
@@ -30,8 +35,8 @@ public final class GoalCalculator {
 
         long monthly = 0;
         if (state == GoalStatus.State.ACTIVE && hasDeadline && remaining > 0) {
-            long monthsLeft = Math.max(1, (daysLeft + 29) / 30);
-            monthly = (remaining + monthsLeft - 1) / monthsLeft;
+            long monthsLeft = Math.max(1, (daysLeft + 29) / 30); // ceil(daysLeft / 30), at least 1
+            monthly = (remaining + monthsLeft - 1) / monthsLeft;   // ceil, so the plan never falls short
         }
         return new GoalStatus(target, saved, remaining, excess, progress, pct.toPlainString(),
                 state, hasDeadline, daysLeft, monthly);

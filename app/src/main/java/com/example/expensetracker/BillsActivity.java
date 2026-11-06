@@ -18,23 +18,26 @@ import android.widget.Toast;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AlertDialog;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
+
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-public class BillsActivity extends AppCompatActivity {
+/** Bills: overdue / upcoming / paid lists, paid status, reminders and the notification permission. */
+public class BillsActivity extends BaseActivity {
     private static final String PREFS = "stage4_prefs";
     private static final String PREF_ASKED = "notification_permission_asked";
+    /** Reminder lead times offered in the editor; must match R.array.reminder_labels. */
     private static final int[] REMINDER_DAYS = {0, 1, 2, 3, 7};
+
     private PlanRowAdapter adapter;
     private TextView emptyView;
     private View banner;
@@ -45,7 +48,7 @@ public class BillsActivity extends AppCompatActivity {
             new ActivityResultContracts.RequestPermission(), granted -> {
                 updateBanner();
                 if (granted) {
-                    BackgroundWork.runNow(this);
+                    BackgroundWork.runNow(this); // show any reminder that is already due
                 } else {
                     Toast.makeText(this, R.string.notif_denied, Toast.LENGTH_LONG).show();
                 }
@@ -84,8 +87,10 @@ public class BillsActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         updateBanner();
-        render();
+        render(); // overdue status changes with the date
     }
+
+    // ----------------------------------------------------------------------- list
 
     private void render() {
         List<Bill> bills = lastBills;
@@ -99,7 +104,8 @@ public class BillsActivity extends AppCompatActivity {
                 else if (s == BillState.OVERDUE) overdue.add(b);
                 else upcoming.add(b);
             }
-            Collections.sort(paid, (a, b) -> Long.compare(b.paidAt, a.paidAt));
+            // the DAO sorts unpaid bills by due date; most recently paid first looks best for history
+            Collections.sort(paid, (a, b) -> Long.compare(b.paidAt, a.paidAt)); // List.sort needs API 24
             addSection(rows, "h:overdue", R.string.bills_overdue, overdue, today);
             addSection(rows, "h:upcoming", R.string.bills_upcoming, upcoming, today);
             addSection(rows, "h:paid", R.string.bills_paid, paid, today);
@@ -140,6 +146,8 @@ public class BillsActivity extends AppCompatActivity {
         for (int i = 0; i < REMINDER_DAYS.length; i++) if (REMINDER_DAYS[i] == days) return i;
         return 0;
     }
+
+    // -------------------------------------------------------------------- actions
 
     private void showOptions(Bill b) {
         if (b.paid) {
@@ -197,6 +205,8 @@ public class BillsActivity extends AppCompatActivity {
                         }))
                 .show();
     }
+
+    // ------------------------------------------------------------------- editor
 
     private void showEditor(Bill existing) {
         View content = LayoutInflater.from(this).inflate(R.layout.dialog_bill, null);
@@ -283,6 +293,8 @@ public class BillsActivity extends AppCompatActivity {
         view.setVisibility(View.VISIBLE);
     }
 
+    // ------------------------------------------------------- notification permission
+
     private SharedPreferences prefs() {
         return getSharedPreferences(PREFS, MODE_PRIVATE);
     }
@@ -291,6 +303,7 @@ public class BillsActivity extends AppCompatActivity {
         banner.setVisibility(NotificationHelper.canNotify(this) ? View.GONE : View.VISIBLE);
     }
 
+    /** After the first bill is saved, ask once (Android 13+) so reminders can actually be shown. */
     private void maybeAskForNotifications() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU && !NotificationHelper.hasPermission(this)
                 && !prefs().getBoolean(PREF_ASKED, false)) {
@@ -310,7 +323,7 @@ public class BillsActivity extends AppCompatActivity {
                 permissionLauncher.launch(android.Manifest.permission.POST_NOTIFICATIONS);
             }
         } else {
-            openNotificationSettings();
+            openNotificationSettings(); // permission granted but notifications switched off in system settings
         }
     }
 

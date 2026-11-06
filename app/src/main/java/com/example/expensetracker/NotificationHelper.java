@@ -8,32 +8,40 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Build;
+
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
 import androidx.core.content.ContextCompat;
 
+/** Notification channel, permission check and bill-reminder notifications. */
 public final class NotificationHelper {
     public static final String CHANNEL_BILLS = "bill_reminders";
 
     private NotificationHelper() {}
 
+    /** Safe to call repeatedly; the channel only exists on Android 8.0+. */
     public static void ensureChannel(Context context) {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return;
-        NotificationChannel channel = new NotificationChannel(CHANNEL_BILLS, context.getString(R.string.channel_bills_name), NotificationManager.IMPORTANCE_DEFAULT);
+        NotificationChannel channel = new NotificationChannel(CHANNEL_BILLS,
+                context.getString(R.string.channel_bills_name), NotificationManager.IMPORTANCE_DEFAULT);
         channel.setDescription(context.getString(R.string.channel_bills_desc));
         NotificationManager nm = context.getSystemService(NotificationManager.class);
         if (nm != null) nm.createNotificationChannel(channel);
     }
+
+    /** True when the POST_NOTIFICATIONS permission (Android 13+) is granted. Always true below Android 13. */
     public static boolean hasPermission(Context context) {
         return Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU
                 || ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS)
                 == PackageManager.PERMISSION_GRANTED;
     }
 
+    /** Permission granted AND notifications not switched off for the app in system settings. */
     public static boolean canNotify(Context context) {
         return hasPermission(context) && NotificationManagerCompat.from(context).areNotificationsEnabled();
     }
 
+    /** Shows (or refreshes) the notification for one bill. Returns false if nothing was shown. */
     public static boolean notifyBill(Context context, Bill bill, long todayStart) {
         if (!canNotify(context)) return false;
         ensureChannel(context);
@@ -67,7 +75,7 @@ public final class NotificationHelper {
         try {
             NotificationManagerCompat.from(context).notify((int) bill.id, b.build());
             return true;
-        } catch (SecurityException e) {
+        } catch (SecurityException e) { // permission revoked between the check and the call
             return false;
         }
     }

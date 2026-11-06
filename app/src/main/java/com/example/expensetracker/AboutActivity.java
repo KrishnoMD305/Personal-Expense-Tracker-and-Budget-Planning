@@ -1,0 +1,23 @@
+package com.example.expensetracker;
+
+import android.os.Bundle;
+import android.view.MenuItem;
+
+/** Stage 5: the About page (text lives in strings.xml as {@code about_text}). */
+public class AboutActivity extends BaseActivity {
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_about);
+        if (getSupportActionBar() != null) getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        if (item.getItemId() == android.R.id.home) {
+            finish();
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+}

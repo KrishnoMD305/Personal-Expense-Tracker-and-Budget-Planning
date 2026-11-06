@@ -4,13 +4,15 @@ import android.app.DatePickerDialog;
 import android.content.Context;
 import android.view.View;
 import android.widget.Button;
+
 import java.util.Calendar;
 
+/** A button that shows a date and opens a date picker; an optional "clear" view resets it to "not set". */
 final class DateField {
     private final Context context;
     private final Button button;
     private final int emptyTextRes;
-    private long millis;
+    private long millis; // start of day, or 0 for "not set"
 
     DateField(Context context, Button button, long initialMillis, int emptyTextRes, View clearView) {
         this.context = context;
@@ -20,13 +22,16 @@ final class DateField {
         button.setOnClickListener(v -> pick());
         if (clearView != null) clearView.setOnClickListener(v -> set(0));
     }
+
     long get() {
         return millis;
     }
+
     void set(long newMillis) {
         millis = newMillis > 0 ? MonthUtils.startOfDay(newMillis) : 0;
         button.setText(millis > 0 ? PlanDates.format(millis) : context.getString(emptyTextRes));
     }
+
     private void pick() {
         Calendar c = Calendar.getInstance();
         if (millis > 0) c.setTimeInMillis(millis);

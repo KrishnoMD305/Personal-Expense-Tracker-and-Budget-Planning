@@ -5,6 +5,7 @@ import androidx.room.Dao;
 import androidx.room.Insert;
 import androidx.room.Query;
 import androidx.room.Update;
+
 import java.util.List;
 
 @Dao
@@ -15,6 +16,7 @@ public interface RecurringRuleDao {
     @Update
     void update(RecurringRule rule);
 
+    /** Also removes the rule's postings (cascade); transactions already created are kept. */
     @Query("DELETE FROM recurring_rules WHERE id = :id")
     void deleteById(long id);
 

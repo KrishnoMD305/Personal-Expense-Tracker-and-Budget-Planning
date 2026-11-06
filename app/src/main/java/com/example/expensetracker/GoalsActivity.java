@@ -5,14 +5,17 @@ import android.os.Bundle;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
-import androidx.appcompat.app.AppCompatActivity;
+
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+
 import java.util.ArrayList;
 import java.util.List;
 
-public class GoalsActivity extends AppCompatActivity {
+/** All savings goals with progress bars; tap one for its contribution history and management. */
+public class GoalsActivity extends BaseActivity {
     private PlanRowAdapter adapter;
     private TextView emptyView;
     private List<GoalWithSaved> lastGoals;
@@ -49,7 +52,7 @@ public class GoalsActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        render();
+        render(); // "days left" changes with the date
     }
 
     private void render() {

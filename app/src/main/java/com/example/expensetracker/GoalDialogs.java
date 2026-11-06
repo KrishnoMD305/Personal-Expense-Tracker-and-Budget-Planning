@@ -5,15 +5,20 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
+
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
+
 import java.math.BigDecimal;
 
+/** Add / edit goal and add contribution dialogs, used from both goal screens. */
 final class GoalDialogs {
     private GoalDialogs() {}
 
+    /** {@code existing == null} creates a new goal. */
     static void showGoalEditor(AppCompatActivity activity, SavingsGoal existing) {
         View content = LayoutInflater.from(activity).inflate(R.layout.dialog_goal, null);
         TextInputLayout nameLayout = content.findViewById(R.id.goalNameLayout);

@@ -1,8 +1,10 @@
 package com.example.expensetracker;
 
+/** Input validation for Stage 4 forms. Every method returns an error message, or null when valid. */
 public final class PlanValidator {
     public static final int MAX_NAME = 40;
     public static final int MAX_REMINDER_DAYS = 30;
+
     private PlanValidator() {}
 
     public static String validateName(String raw) {
@@ -12,6 +14,7 @@ public final class PlanValidator {
         return null;
     }
 
+    /** A new or changed deadline must not be in the past; an unchanged one is always accepted. */
     public static String validateDeadline(long deadlineMillis, long todayStart, boolean isNewOrChanged) {
         if (deadlineMillis > 0 && isNewOrChanged && MonthUtils.startOfDay(deadlineMillis) < todayStart) {
             return "Deadline can't be in the past";
@@ -19,7 +22,8 @@ public final class PlanValidator {
         return null;
     }
 
-    public static String validateRuleDates(long startMillis, long endMillis, long todayStart, boolean startIsNewOrChanged) {
+    public static String validateRuleDates(long startMillis, long endMillis, long todayStart,
+                                           boolean startIsNewOrChanged) {
         if (startMillis <= 0) return "Choose a start date";
         long start = MonthUtils.startOfDay(startMillis);
         if (startIsNewOrChanged && start < todayStart) return "Start date can't be in the past";

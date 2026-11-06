@@ -4,6 +4,7 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Locale;
 
+/** Stage 4 date helpers. All "day" values are the start of a local day (device time zone). */
 public final class PlanDates {
     private static final double DAY_MILLIS = 86_400_000.0;
 
@@ -12,12 +13,19 @@ public final class PlanDates {
     public static long today() {
         return MonthUtils.startOfDay(System.currentTimeMillis());
     }
+
+    /** Whole calendar days from one day-start to another (negative if {@code toDay} is earlier). */
     public static int daysBetween(long fromDay, long toDay) {
+        // Rounding absorbs the 23/25-hour days around daylight-saving changes.
         return (int) Math.round((toDay - fromDay) / DAY_MILLIS);
     }
+
+    /** "20 Oct 2026" in the device language. */
     public static String format(long millis) {
         return new SimpleDateFormat("dd MMM yyyy", Locale.getDefault()).format(new java.util.Date(millis));
     }
+
+    /** The next instant (strictly after {@code now}) at {@code hour}:00 local time. */
     public static long nextHourOfDay(long now, int hour) {
         Calendar c = Calendar.getInstance();
         c.setTimeInMillis(now);

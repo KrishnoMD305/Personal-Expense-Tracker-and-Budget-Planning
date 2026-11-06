@@ -1,11 +1,15 @@
 package com.example.expensetracker;
 
 import android.content.Context;
+
 import androidx.lifecycle.LiveData;
+
 import java.util.List;
 
+/** Recurring rules, and the scheduler that turns due occurrences into real transactions. */
 public final class RecurringRepository {
     private static final String FAILED = "Could not save. Please try again.";
+    /** Safety valve: occurrences handled per rule per run (the rest are picked up by the next run). */
     static final int MAX_PER_RULE_PER_RUN = 1000;
 
     private RecurringRepository() {}
@@ -14,6 +18,7 @@ public final class RecurringRepository {
         return AppDatabase.getInstance(context).recurringRuleDao().observeAll();
     }
 
+    /** Creates a rule (id == 0) or updates one, then immediately creates any occurrence that is due. */
     public static void save(Context context, long id, String type, long amountPaisa, String category,
                             String note, String frequency, long startMillis, long endMillis,
                             PlanCallback callback) {
@@ -55,6 +60,7 @@ public final class RecurringRepository {
         }, FAILED);
     }
 
+    /** Pause (false) or resume (true). Resuming never back-fills the occurrences missed while paused. */
     public static void setActive(Context context, long id, boolean active, PlanCallback callback) {
         AppDatabase db = AppDatabase.getInstance(context);
         PlanCallback.run(callback, () -> {
@@ -73,6 +79,7 @@ public final class RecurringRepository {
         }, FAILED);
     }
 
+    /** Deletes the rule. Transactions it already created stay in the history. */
     public static void delete(Context context, long id, PlanCallback callback) {
         AppDatabase db = AppDatabase.getInstance(context);
         PlanCallback.run(callback, () -> {
@@ -81,6 +88,14 @@ public final class RecurringRepository {
         }, FAILED);
     }
 
+    /**
+     * Creates a transaction for every active-rule occurrence that is due (on or before today) and has not
+     * been created yet. Safe to call as often as you like, from any thread, even concurrently:
+     * the whole run is one database transaction and each occurrence is guarded by the UNIQUE
+     * (ruleId, occurrenceMillis) index in {@code recurring_postings}.
+     *
+     * @return the number of transactions created
+     */
     public static int processDue(AppDatabase db, long nowMillis) {
         return db.runInTransaction(() -> {
             long today = MonthUtils.startOfDay(nowMillis);
@@ -101,13 +116,14 @@ public final class RecurringRepository {
         });
     }
 
+    /** Inserts the posting marker first; only if that was new is the transaction created. */
     private static boolean postOccurrence(AppDatabase db, RecurringRule rule, long occurrence, long now) {
         RecurringPosting p = new RecurringPosting();
         p.ruleId = rule.id;
         p.occurrenceMillis = occurrence;
         p.createdAt = now;
         long postingId = db.recurringPostingDao().insertIfAbsent(p);
-        if (postingId == -1) return false;
+        if (postingId == -1) return false; // already created before
         Transaction t = new Transaction();
         t.type = rule.type;
         t.amountPaisa = rule.amountPaisa;

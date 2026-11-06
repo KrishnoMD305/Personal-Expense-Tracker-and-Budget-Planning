@@ -6,6 +6,7 @@ import androidx.room.ForeignKey;
 import androidx.room.Index;
 import androidx.room.PrimaryKey;
 
+/** Stage 4: one deposit into a savings goal. Deleting the goal deletes its contributions. */
 @Entity(tableName = "goal_contributions",
         foreignKeys = @ForeignKey(entity = SavingsGoal.class, parentColumns = "id",
                 childColumns = "goalId", onDelete = ForeignKey.CASCADE),

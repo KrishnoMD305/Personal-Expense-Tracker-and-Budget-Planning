@@ -8,14 +8,16 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AlertDialog;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+
 import com.google.android.material.progressindicator.LinearProgressIndicator;
+
 import java.util.ArrayList;
 import java.util.List;
 
-public class GoalDetailActivity extends AppCompatActivity {
+/** One goal: progress, contributions, contribution history, edit / archive / delete. */
+public class GoalDetailActivity extends BaseActivity {
     public static final String EXTRA_GOAL_ID = "goal_id";
 
     private long goalId;
@@ -107,7 +109,7 @@ public class GoalDetailActivity extends AppCompatActivity {
     private void renderHistory(List<GoalContribution> contributions) {
         List<PlanRow> rows = new ArrayList<>();
         if (contributions != null) {
-            int income = getColor(R.color.income);
+            int income = ThemeColors.get(this, R.attr.etIncome);
             for (GoalContribution c : contributions) {
                 rows.add(PlanRow.item("c:" + c.id, "+ " + MoneyUtils.format(c.amountPaisa),
                         PlanDates.format(c.dateMillis), income, c.note, null,
@@ -148,6 +150,7 @@ public class GoalDetailActivity extends AppCompatActivity {
                 .setPositiveButton(R.string.delete, (d, w) ->
                         GoalRepository.delete(this, goalId, err -> {
                             if (err != null) Toast.makeText(this, err, Toast.LENGTH_SHORT).show();
+                            // success: the observer sees the goal disappear and closes this screen
                         }))
                 .show();
     }

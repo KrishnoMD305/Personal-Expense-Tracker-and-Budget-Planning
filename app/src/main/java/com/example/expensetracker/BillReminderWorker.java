@@ -1,14 +1,17 @@
 package com.example.expensetracker;
 
 import android.content.Context;
+
 import androidx.annotation.NonNull;
 import androidx.work.Worker;
 import androidx.work.WorkerParameters;
 
+/** WorkManager job: shows notifications for bills that are due soon or overdue (once per bill per day). */
 public class BillReminderWorker extends Worker {
     public BillReminderWorker(@NonNull Context context, @NonNull WorkerParameters params) {
         super(context, params);
     }
+
     @NonNull
     @Override
     public Result doWork() {

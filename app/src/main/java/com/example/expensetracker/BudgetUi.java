@@ -4,25 +4,31 @@ import android.content.Context;
 import android.graphics.Color;
 import android.view.View;
 import android.widget.TextView;
+
 import androidx.core.content.ContextCompat;
+
 import com.google.android.material.progressindicator.LinearProgressIndicator;
+
 import java.util.List;
 
+/** Small view helpers shared by the dashboard and the budget screen. */
 final class BudgetUi {
     private BudgetUi() {}
+
     static int colorFor(Context c, BudgetStatus.Level level) {
         switch (level) {
             case EXCEEDED:
-                return ContextCompat.getColor(c, R.color.expense);
+                return ThemeColors.get(c, R.attr.etExpense);
             case WARNING:
-                return ContextCompat.getColor(c, R.color.warning);
+                return ThemeColors.get(c, R.attr.etWarning);
             case NORMAL:
-                return ContextCompat.getColor(c, R.color.income);
+                return ThemeColors.get(c, R.attr.etIncome);
             default:
-                return ContextCompat.getColor(c, R.color.progress_track);
+                return ThemeColors.get(c, R.attr.etTrack);
         }
     }
 
+    /** Fills a progress bar and its "NN%" label from a status (hidden when no budget is set). */
     static void bindProgress(LinearProgressIndicator bar, TextView percent, BudgetStatus s) {
         Context c = bar.getContext();
         int color = colorFor(c, s.level);
@@ -37,6 +43,7 @@ final class BudgetUi {
         }
     }
 
+    /** Shows the alert list in a coloured banner, or hides the banner when there is nothing to say. */
     static void bindBanner(TextView banner, List<BudgetAlerts.Alert> alerts) {
         if (alerts.isEmpty()) {
             banner.setVisibility(View.GONE);
@@ -51,8 +58,9 @@ final class BudgetUi {
         }
         Context c = banner.getContext();
         banner.setText(sb.toString());
-        banner.setTextColor(Color.parseColor("#212121"));
-        banner.setBackgroundColor(ContextCompat.getColor(c, exceeded ? R.color.expense_light : R.color.warning_light));
+        banner.setTextColor(ThemeColors.get(banner.getContext(), R.attr.etBannerText));
+        banner.setBackgroundColor(ThemeColors.get(c,
+                exceeded ? R.attr.etExpenseLight : R.attr.etWarningLight));
         banner.setVisibility(View.VISIBLE);
     }
 

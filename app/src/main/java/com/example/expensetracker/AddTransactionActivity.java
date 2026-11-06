@@ -9,10 +9,12 @@ import android.widget.Button;
 import android.widget.RadioGroup;
 import android.widget.Spinner;
 import android.widget.Toast;
+
 import androidx.appcompat.app.AlertDialog;
-import androidx.appcompat.app.AppCompatActivity;
+
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
+
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -21,7 +23,8 @@ import java.util.Calendar;
 import java.util.List;
 import java.util.Locale;
 
-public class AddTransactionActivity extends AppCompatActivity {
+/** Adds a transaction, or edits/deletes an existing one when {@link #EXTRA_TRANSACTION_ID} is set. */
+public class AddTransactionActivity extends BaseActivity {
     public static final String EXTRA_TRANSACTION_ID = "transaction_id";
     private static final String STATE_DATE = "date_millis";
     private static final String STATE_LOADED = "edit_loaded";
@@ -37,6 +40,7 @@ public class AddTransactionActivity extends AppCompatActivity {
     private long editingId = 0;
     private boolean editLoaded = false;
     private boolean busy = false;
+    /** Category to pre-select the next time the spinner is rebuilt (used when editing). */
     private String pendingCategory;
 
     @Override
@@ -66,7 +70,8 @@ public class AddTransactionActivity extends AppCompatActivity {
         dateButton.setOnClickListener(v -> new DatePickerDialog(this, (view, y, m, d) -> {
             selectedDate.set(y, m, d);
             updateDateButton();
-        }, selectedDate.get(Calendar.YEAR), selectedDate.get(Calendar.MONTH), selectedDate.get(Calendar.DAY_OF_MONTH)).show());
+        }, selectedDate.get(Calendar.YEAR), selectedDate.get(Calendar.MONTH),
+                selectedDate.get(Calendar.DAY_OF_MONTH)).show());
         saveButton.setOnClickListener(v -> save());
 
         if (isEditing()) {
@@ -82,6 +87,7 @@ public class AddTransactionActivity extends AppCompatActivity {
     private boolean isEditing() {
         return editingId != 0;
     }
+
     private boolean isIncome() {
         return typeGroup.getCheckedRadioButtonId() == R.id.radioIncome;
     }
@@ -104,6 +110,8 @@ public class AddTransactionActivity extends AppCompatActivity {
         dateButton.setText(dateFormat.format(selectedDate.getTime()));
     }
 
+    // ---------------------------------------------------------------- edit mode
+
     private void loadForEdit() {
         final long id = editingId;
         AppDatabase.WRITE_EXECUTOR.execute(() -> {
@@ -123,7 +131,7 @@ public class AddTransactionActivity extends AppCompatActivity {
     private void populate(Transaction t) {
         pendingCategory = t.category;
         typeGroup.check(t.isIncome() ? R.id.radioIncome : R.id.radioExpense);
-        if (pendingCategory != null) updateCategories(); 
+        if (pendingCategory != null) updateCategories(); // the check listener did not fire (type unchanged)
         amountInput.setText(BigDecimal.valueOf(t.amountPaisa, 2).toPlainString());
         noteInput.setText(t.note == null ? "" : t.note);
         selectedDate.setTimeInMillis(t.dateMillis);
@@ -131,6 +139,8 @@ public class AddTransactionActivity extends AppCompatActivity {
         editLoaded = true;
         saveButton.setEnabled(true);
     }
+
+    // --------------------------------------------------------------------- save
 
     private void save() {
         if (busy) return;
@@ -160,6 +170,7 @@ public class AddTransactionActivity extends AppCompatActivity {
         final long dateMillis = day.getTimeInMillis();
         final long amount = paisa;
         final long id = editingId;
+
         setBusy(true);
         AppDatabase.WRITE_EXECUTOR.execute(() -> {
             AppDatabase db = AppDatabase.getInstance(this);
@@ -182,7 +193,7 @@ public class AddTransactionActivity extends AppCompatActivity {
                     if (existing == null) {
                         found = false;
                     } else {
-                        existing.type = type; 
+                        existing.type = type; // createdAt is kept
                         existing.amountPaisa = amount;
                         existing.category = category;
                         existing.note = note;
@@ -191,6 +202,7 @@ public class AddTransactionActivity extends AppCompatActivity {
                     }
                 }
                 if (found && Transaction.TYPE_EXPENSE.equals(type)) {
+                    // Budget position after this change, used for the 80% / 100% / overspend alert.
                     overview = BudgetRepository.loadMonth(db, MonthUtils.keyOf(dateMillis));
                 }
             } catch (RuntimeException e) {
@@ -208,16 +220,19 @@ public class AddTransactionActivity extends AppCompatActivity {
     }
 
     private void onSaved(boolean found, boolean failed, MonthOverview overview, String category) {
-        List<BudgetAlerts.Alert> alerts = overview == null ? new ArrayList<>() : BudgetAlerts.forExpense(overview, category);
+        List<BudgetAlerts.Alert> alerts = overview == null
+                ? new ArrayList<>() : BudgetAlerts.forExpense(overview, category);
         boolean gone = isFinishing() || isDestroyed();
         if (failed || !found) {
-            Toast.makeText(getApplicationContext(), failed ? R.string.save_failed : R.string.tx_not_found, Toast.LENGTH_SHORT).show();
+            Toast.makeText(getApplicationContext(),
+                    failed ? R.string.save_failed : R.string.tx_not_found, Toast.LENGTH_SHORT).show();
             if (gone) return;
             if (!found) finish();
             else setBusy(false);
             return;
         }
-        Toast.makeText(getApplicationContext(), isEditing() ? R.string.updated : R.string.saved, Toast.LENGTH_SHORT).show();
+        Toast.makeText(getApplicationContext(), isEditing() ? R.string.updated : R.string.saved,
+                Toast.LENGTH_SHORT).show();
         if (gone) {
             if (!alerts.isEmpty()) {
                 Toast.makeText(getApplicationContext(), BudgetUi.joinMessages(alerts), Toast.LENGTH_LONG).show();
@@ -228,8 +243,15 @@ public class AddTransactionActivity extends AppCompatActivity {
             finish();
             return;
         }
-        new AlertDialog.Builder(this).setTitle(R.string.budget_alert_title).setMessage(BudgetUi.joinMessages(alerts)).setPositiveButton(R.string.ok, null).setOnDismissListener(d -> finish()).show();
+        new AlertDialog.Builder(this)
+                .setTitle(R.string.budget_alert_title)
+                .setMessage(BudgetUi.joinMessages(alerts))
+                .setPositiveButton(R.string.ok, null)
+                .setOnDismissListener(d -> finish())
+                .show();
     }
+
+    // ------------------------------------------------------------------- delete
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -254,7 +276,13 @@ public class AddTransactionActivity extends AppCompatActivity {
         if (busy || !editLoaded) return;
         String amountText = amountInput.getText() == null ? "" : amountInput.getText().toString().trim();
         Object sel = categorySpinner.getSelectedItem();
-        new AlertDialog.Builder(this).setTitle(R.string.delete_title).setMessage(getString(R.string.delete_message, sel == null ? "" : sel.toString(), amountText.isEmpty() ? "" : MoneyUtils.SYMBOL + " " + amountText)).setNegativeButton(android.R.string.cancel, null).setPositiveButton(R.string.delete, (d, w) -> deleteNow()).show();
+        new AlertDialog.Builder(this)
+                .setTitle(R.string.delete_title)
+                .setMessage(getString(R.string.delete_message, sel == null ? "" : sel.toString(),
+                        amountText.isEmpty() ? "" : MoneyUtils.SYMBOL + " " + amountText))
+                .setNegativeButton(android.R.string.cancel, null)
+                .setPositiveButton(R.string.delete, (d, w) -> deleteNow())
+                .show();
     }
 
     private void deleteNow() {
@@ -271,7 +299,8 @@ public class AddTransactionActivity extends AppCompatActivity {
             }
             final boolean fFailed = failed;
             runOnUiThread(() -> {
-                Toast.makeText(getApplicationContext(), fFailed ? R.string.save_failed : R.string.deleted,Toast.LENGTH_SHORT).show();
+                Toast.makeText(getApplicationContext(), fFailed ? R.string.save_failed : R.string.deleted,
+                        Toast.LENGTH_SHORT).show();
                 if (isFinishing() || isDestroyed()) return;
                 if (fFailed) setBusy(false);
                 else finish();

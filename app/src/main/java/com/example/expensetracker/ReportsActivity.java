@@ -9,9 +9,10 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
-import androidx.appcompat.app.AppCompatActivity;
+
 import androidx.core.content.ContextCompat;
 import androidx.lifecycle.LiveData;
+
 import com.github.mikephil.charting.charts.BarChart;
 import com.github.mikephil.charting.charts.LineChart;
 import com.github.mikephil.charting.charts.PieChart;
@@ -32,6 +33,7 @@ import com.github.mikephil.charting.highlight.Highlight;
 import com.github.mikephil.charting.listener.OnChartValueSelectedListener;
 import com.google.android.material.button.MaterialButtonToggleGroup;
 import com.google.android.material.progressindicator.LinearProgressIndicator;
+
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -39,12 +41,21 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
-public class ReportsActivity extends AppCompatActivity {
+/**
+ * Stage 3: category pie/donut chart, monthly income-vs-expense bars, summaries, month-to-month
+ * comparison, spending insights and budget-vs-actual, for a chosen month or a custom date range.
+ *
+ * <p>Every number comes from {@link ReportCalculator} over live Room data. Changing the period
+ * detaches the old LiveData and attaches a new one, so the screen can never show stale figures.
+ */
+public class ReportsActivity extends BaseActivity {
     private static final String STATE_MODE = "mode";
     private static final String STATE_MONTH = "month";
     private static final String STATE_FIRST = "first_day";
     private static final String STATE_LAST = "last_day";
     private static final int DEFAULT_RANGE_DAYS = 30;
+
+    // ---- selected period
     private ReportPeriod.Type mode = ReportPeriod.Type.MONTH;
     private String monthKey;
     private long customFirstDay;
@@ -52,26 +63,34 @@ public class ReportsActivity extends AppCompatActivity {
     private ReportPeriod period;
     private LiveData<ReportData> source;
     private ReportData shown;
+
     private final SimpleDateFormat dateFormat = new SimpleDateFormat("dd MMM yyyy", Locale.getDefault());
+
+    // ---- views
     private MaterialButtonToggleGroup modeToggle;
     private View monthRow, customRow;
     private TextView monthLabel, statusMessage;
     private Button startDateButton, endDateButton;
     private LinearProgressIndicator loadingBar;
+
     private View summaryCard, compareCard, categoryCard, barCard, trendCard, largestCard;
     private TextView periodTitle, sumIncome, sumExpense, sumNet, sumSavingsRate, sumMeta;
     private TextView compareTitle, barNote, trendTitle, budgetNote;
     private View topCategoriesHeading, insightsHeading, largestExpensesHeading, largestIncomeHeading;
-    private ViewGroup compareContainer, topCategoriesContainer, monthlyContainer, insightsContainer, largestExpensesContainer, largestIncomeContainer, budgetContainer;
+    private ViewGroup compareContainer, topCategoriesContainer, monthlyContainer, insightsContainer,
+            largestExpensesContainer, largestIncomeContainer, budgetContainer;
     private PieChart pieChart;
     private BarChart barChart;
     private LineChart lineChart;
+
     private int[] palette;
+    private ExportController export;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_reports);
+        export = new ExportController(this, savedInstanceState);
         if (getSupportActionBar() != null) getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         palette = new int[]{
@@ -120,12 +139,19 @@ public class ReportsActivity extends AppCompatActivity {
         findViewById(R.id.preset30).setOnClickListener(v -> applyLastDays(30));
         findViewById(R.id.preset90).setOnClickListener(v -> applyLastDays(90));
         findViewById(R.id.presetYtd).setOnClickListener(v -> applyYearToDate());
+
         bind();
     }
 
     private int color(int res) {
         return ContextCompat.getColor(this, res);
     }
+
+    /** Colour of a theme attribute (income / expense / text ...) for the active theme. */
+    private int attr(int attrRes) {
+        return ThemeColors.get(this, attrRes);
+    }
+
     private void findViews() {
         modeToggle = findViewById(R.id.modeToggle);
         monthRow = findViewById(R.id.monthRow);
@@ -170,6 +196,8 @@ public class ReportsActivity extends AppCompatActivity {
         lineChart = findViewById(R.id.lineChart);
     }
 
+    // ------------------------------------------------------------------ period selection
+
     private void changeMonth(int delta) {
         String target = MonthUtils.shift(monthKey, delta);
         if (!MonthUtils.isValidKey(target)) return;
@@ -203,6 +231,7 @@ public class ReportsActivity extends AppCompatActivity {
             picked.clear();
             picked.set(year, month, dayOfMonth);
             long chosen = picked.getTimeInMillis();
+            // Keep the range valid: moving one end past the other drags the other end along.
             if (isStart) {
                 customFirstDay = chosen;
                 if (customLastDay < chosen) customLastDay = chosen;
@@ -224,10 +253,13 @@ public class ReportsActivity extends AppCompatActivity {
         dialog.show();
     }
 
+    /** (Re)creates the period from the current selection and subscribes to its report. */
     private void bind() {
         ReportPeriod p;
         try {
-            p = mode == ReportPeriod.Type.MONTH ? ReportPeriod.month(monthKey) : ReportPeriod.custom(customFirstDay, customLastDay);
+            p = mode == ReportPeriod.Type.MONTH
+                    ? ReportPeriod.month(monthKey)
+                    : ReportPeriod.custom(customFirstDay, customLastDay);
         } catch (IllegalArgumentException e) {
             showStatus(getString(R.string.rep_load_error));
             return;
@@ -249,10 +281,15 @@ public class ReportsActivity extends AppCompatActivity {
         endDateButton.setText(getString(R.string.rep_to, dateFormat.format(new Date(customLastDay))));
     }
 
+    // ------------------------------------------------------------------ rendering
+
     private void showStatus(String message) {
         statusMessage.setText(message);
         statusMessage.setVisibility(View.VISIBLE);
-        for (View v : new View[]{summaryCard, compareCard, categoryCard, barCard, trendCard, largestCard, findViewById(R.id.budgetSectionCard)}) {v.setVisibility(View.GONE);}
+        for (View v : new View[]{summaryCard, compareCard, categoryCard, barCard, trendCard, largestCard,
+                findViewById(R.id.budgetSectionCard)}) {
+            v.setVisibility(View.GONE);
+        }
     }
 
     private void render(ReportData d) {
@@ -262,7 +299,7 @@ public class ReportsActivity extends AppCompatActivity {
             showStatus(getString(R.string.rep_load_error));
             return;
         }
-        if (!d.period.equals(period)) return;
+        if (!d.period.equals(period)) return; // belongs to a period that is no longer selected
         shown = d;
 
         boolean anyBarData = false;
@@ -286,11 +323,14 @@ public class ReportsActivity extends AppCompatActivity {
 
         categoryCard.setVisibility(hasExpenses ? View.VISIBLE : View.GONE);
         if (hasExpenses) bindCategories(d);
+
         barCard.setVisibility(anyBarData ? View.VISIBLE : View.GONE);
         if (anyBarData) bindBars(d);
+
         boolean hasTrend = hasExpenses || !d.insights.isEmpty();
         trendCard.setVisibility(hasTrend ? View.VISIBLE : View.GONE);
         if (hasTrend) bindTrend(d);
+
         boolean hasLargest = !d.largestExpenses.isEmpty() || !d.largestIncome.isEmpty();
         largestCard.setVisibility(hasLargest ? View.VISIBLE : View.GONE);
         if (hasLargest) bindLargest(d);
@@ -300,25 +340,30 @@ public class ReportsActivity extends AppCompatActivity {
 
     private String periodLabel(ReportPeriod p) {
         if (p.type == ReportPeriod.Type.MONTH) return MonthUtils.label(p.monthKey);
-        return getString(R.string.rep_range_label, dateFormat.format(new Date(p.startMillis)), dateFormat.format(new Date(p.endMillis - 1)));
+        return getString(R.string.rep_range_label,
+                dateFormat.format(new Date(p.startMillis)), dateFormat.format(new Date(p.endMillis - 1)));
     }
 
     private int goodBad(long value, boolean higherIsGood) {
-        if (value == 0) return Color.parseColor("#757575");
-        return color((value > 0) == higherIsGood ? R.color.income : R.color.expense);
+        if (value == 0) return attr(R.attr.etTextTertiary);
+        return attr((value > 0) == higherIsGood ? R.attr.etIncome : R.attr.etExpense);
     }
+
+    // ---- summary + comparison
 
     private void bindSummary(ReportData d) {
         ReportData.Summary s = d.current;
         periodTitle.setText(periodLabel(d.period));
         sumIncome.setText(MoneyUtils.format(s.incomePaisa));
-        sumIncome.setTextColor(color(R.color.income));
+        sumIncome.setTextColor(attr(R.attr.etIncome));
         sumExpense.setText(MoneyUtils.format(s.expensePaisa));
-        sumExpense.setTextColor(color(R.color.expense));
+        sumExpense.setTextColor(attr(R.attr.etExpense));
         sumNet.setText(MoneyUtils.format(s.netPaisa));
-        sumNet.setTextColor(color(s.netPaisa < 0 ? R.color.expense : R.color.income));
+        sumNet.setTextColor(attr(s.netPaisa < 0 ? R.attr.etExpense : R.attr.etIncome));
         sumSavingsRate.setText(ReportFormat.percent(s.savingsRateTenths));
-        sumSavingsRate.setTextColor(s.savingsRateTenths == null ? Color.parseColor("#757575") : color(s.savingsRateTenths < 0 ? R.color.expense : R.color.income));
+        sumSavingsRate.setTextColor(s.savingsRateTenths == null
+                ? attr(R.attr.etTextTertiary)
+                : attr(s.savingsRateTenths < 0 ? R.attr.etExpense : R.attr.etIncome));
         sumMeta.setText(getString(R.string.rep_summary_meta, s.transactionCount(), d.period.dayCount()));
     }
 
@@ -340,12 +385,16 @@ public class ReportsActivity extends AppCompatActivity {
                 getString(R.string.rep_vs, MoneyUtils.format(c.netPaisa), MoneyUtils.format(p.netPaisa)),
                 ReportFormat.signedMoney(c.netPaisa - p.netPaisa),
                 goodBad(c.netPaisa - p.netPaisa, true), null, 0);
-        long rateDelta = c.savingsRateTenths == null || p.savingsRateTenths == null ? 0 : c.savingsRateTenths - p.savingsRateTenths;
+        long rateDelta = c.savingsRateTenths == null || p.savingsRateTenths == null
+                ? 0 : c.savingsRateTenths - p.savingsRateTenths;
         addRow(compareContainer, getString(R.string.rep_savings_rate),
-                getString(R.string.rep_vs, ReportFormat.percent(c.savingsRateTenths), ReportFormat.percent(p.savingsRateTenths)),
+                getString(R.string.rep_vs, ReportFormat.percent(c.savingsRateTenths),
+                        ReportFormat.percent(p.savingsRateTenths)),
                 ReportFormat.pointsChange(c.savingsRateTenths, p.savingsRateTenths),
                 goodBad(rateDelta, true), null, 0);
     }
+
+    // ---- category donut + top categories
 
     private void bindCategories(ReportData d) {
         List<PieEntry> entries = new ArrayList<>();
@@ -382,11 +431,13 @@ public class ReportsActivity extends AppCompatActivity {
             addRow(topCategoriesContainer, s.category,
                     getString(R.string.rep_category_sub, ReportFormat.percent(s.shareTenths), s.count),
                     MoneyUtils.format(s.amountPaisa),
-                    color(R.color.expense),
+                    attr(R.attr.etExpense),
                     change == null ? null : getString(R.string.rep_vs_previous, ReportFormat.signedPercent(change)),
                     change == null ? 0 : goodBad(change, false));
         }
     }
+
+    // ---- income vs expense bars + monthly summary
 
     private void bindBars(ReportData d) {
         int n = d.bars.size();
@@ -400,12 +451,13 @@ public class ReportsActivity extends AppCompatActivity {
             labels.add(MonthUtils.shortLabel(b.monthKey));
         }
         BarDataSet incomeSet = new BarDataSet(income, getString(R.string.rep_income));
-        incomeSet.setColor(color(R.color.income));
+        incomeSet.setColor(attr(R.attr.etIncome));
         incomeSet.setDrawValues(false);
         BarDataSet expenseSet = new BarDataSet(expense, getString(R.string.rep_expenses));
-        expenseSet.setColor(color(R.color.expense));
+        expenseSet.setColor(attr(R.attr.etExpense));
         expenseSet.setDrawValues(false);
 
+        // Group maths: (barWidth + barSpace) * 2 bars + groupSpace = 1.0, so month i spans [i, i+1).
         final float groupSpace = 0.125f, barSpace = 0.0625f, barWidth = 0.375f;
         BarData data = new BarData(incomeSet, expenseSet);
         data.setBarWidth(barWidth);
@@ -425,19 +477,22 @@ public class ReportsActivity extends AppCompatActivity {
         }
 
         monthlyContainer.removeAllViews();
-        for (int i = n - 1; i >= 0; i--) {
+        for (int i = n - 1; i >= 0; i--) { // newest first
             ReportData.MonthBar b = d.bars.get(i);
             addRow(monthlyContainer, MonthUtils.label(b.monthKey),
-                    getString(R.string.rep_month_sub, MoneyUtils.format(b.incomePaisa), MoneyUtils.format(b.expensePaisa), ReportFormat.percent(b.savingsRateTenths)),
+                    getString(R.string.rep_month_sub, MoneyUtils.format(b.incomePaisa),
+                            MoneyUtils.format(b.expensePaisa), ReportFormat.percent(b.savingsRateTenths)),
                     ReportFormat.signedMoney(b.netPaisa),
-                    color(b.netPaisa < 0 ? R.color.expense : R.color.income), null, 0);
+                    attr(b.netPaisa < 0 ? R.attr.etExpense : R.attr.etIncome), null, 0);
         }
     }
 
-
+    // ---- spending trend + insights
 
     private void bindTrend(ReportData d) {
-        int titleRes = d.trendGranularity == ReportData.Granularity.DAY ? R.string.rep_trend_day : d.trendGranularity == ReportData.Granularity.WEEK ? R.string.rep_trend_week : R.string.rep_trend_month;
+        int titleRes = d.trendGranularity == ReportData.Granularity.DAY ? R.string.rep_trend_day
+                : d.trendGranularity == ReportData.Granularity.WEEK ? R.string.rep_trend_week
+                : R.string.rep_trend_month;
         trendTitle.setText(titleRes);
 
         int n = d.trend.size();
@@ -451,14 +506,14 @@ public class ReportsActivity extends AppCompatActivity {
                 labels.add(t.label);
             }
             LineDataSet set = new LineDataSet(entries, getString(R.string.rep_expenses));
-            set.setColor(color(R.color.expense));
+            set.setColor(attr(R.attr.etExpense));
             set.setLineWidth(2f);
             set.setDrawCircles(n <= 31);
-            set.setCircleColor(color(R.color.expense));
+            set.setCircleColor(attr(R.attr.etExpense));
             set.setCircleRadius(2.5f);
             set.setDrawValues(false);
             set.setDrawFilled(true);
-            set.setFillColor(color(R.color.expense));
+            set.setFillColor(attr(R.attr.etExpense));
             set.setFillAlpha(40);
             lineChart.setData(new LineData(set));
             XAxis x = lineChart.getXAxis();
@@ -474,28 +529,32 @@ public class ReportsActivity extends AppCompatActivity {
         for (String s : d.insights) {
             TextView tv = new TextView(this);
             tv.setText("\u2022 " + s);
-            tv.setTextColor(color(R.color.chart_text));
+            tv.setTextColor(attr(R.attr.etChartText));
             tv.setTextSize(13f);
             tv.setPadding(0, dp(4), 0, dp(4));
             insightsContainer.addView(tv);
         }
     }
 
+    // ---- largest transactions
+
     private void bindLargest(ReportData d) {
-        fillTransactions(largestExpensesContainer, largestExpensesHeading, d.largestExpenses, R.color.expense);
-        fillTransactions(largestIncomeContainer, largestIncomeHeading, d.largestIncome, R.color.income);
+        fillTransactions(largestExpensesContainer, largestExpensesHeading, d.largestExpenses, R.attr.etExpense);
+        fillTransactions(largestIncomeContainer, largestIncomeHeading, d.largestIncome, R.attr.etIncome);
     }
 
-    private void fillTransactions(ViewGroup container, View heading, List<Transaction> list, int colorRes) {
+    private void fillTransactions(ViewGroup container, View heading, List<Transaction> list, int colorAttr) {
         container.removeAllViews();
         heading.setVisibility(list.isEmpty() ? View.GONE : View.VISIBLE);
         for (Transaction t : list) {
             String note = t.note == null || t.note.trim().isEmpty() ? "" : " \u2022 " + t.note.trim();
             addRow(container, ReportCalculator.normalize(t.category),
                     dateFormat.format(new Date(t.dateMillis)) + note,
-                    MoneyUtils.format(t.amountPaisa), color(colorRes), null, 0);
+                    MoneyUtils.format(t.amountPaisa), attr(colorAttr), null, 0);
         }
     }
+
+    // ---- budgets
 
     private void bindBudgets(ReportData d) {
         budgetContainer.removeAllViews();
@@ -532,7 +591,11 @@ public class ReportsActivity extends AppCompatActivity {
         }
     }
 
-    private void addRow(ViewGroup parent, String title, String subtitle, String value, int valueColor, String valueSub, int valueSubColor) {
+    // ------------------------------------------------------------------ small helpers
+
+    /** Adds a two-line row (title/subtitle on the left, value/sub-value on the right). */
+    private void addRow(ViewGroup parent, String title, String subtitle, String value, int valueColor,
+                        String valueSub, int valueSubColor) {
         View row = LayoutInflater.from(this).inflate(R.layout.item_report_row, parent, false);
         ((TextView) row.findViewById(R.id.rowTitle)).setText(title);
         ((TextView) row.findViewById(R.id.rowSubtitle)).setText(subtitle);
@@ -554,14 +617,20 @@ public class ReportsActivity extends AppCompatActivity {
         return Math.round(value * getResources().getDisplayMetrics().density);
     }
 
+    // ------------------------------------------------------------------ one-time chart setup
+
     private void configureCharts() {
-        int text = color(R.color.chart_text);
-        int grid = color(R.color.chart_grid);
+        int text = attr(R.attr.etChartText);
+        int grid = attr(R.attr.etChartGrid);
         String noData = getString(R.string.rep_chart_no_data);
+
+        // Donut
         pieChart.getDescription().setEnabled(false);
         pieChart.setNoDataText(noData);
         pieChart.setDrawHoleEnabled(true);
         pieChart.setHoleRadius(55f);
+        pieChart.setHoleColor(attr(R.attr.etSurface)); // donut hole follows the theme (dark in Dark theme)
+        pieChart.setTransparentCircleColor(attr(R.attr.etSurface));
         pieChart.setTransparentCircleRadius(60f);
         pieChart.setDrawEntryLabels(false);
         pieChart.setRotationEnabled(false);
@@ -594,9 +663,10 @@ public class ReportsActivity extends AppCompatActivity {
             }
         });
 
+        // Grouped bars
         barChart.getDescription().setEnabled(false);
         barChart.setNoDataText(noData);
-        barChart.setTouchEnabled(false);
+        barChart.setTouchEnabled(false); // exact figures are in the list below; lets the page scroll freely
         barChart.getAxisRight().setEnabled(false);
         barChart.getAxisLeft().setAxisMinimum(0f);
         barChart.getAxisLeft().setGridColor(grid);
@@ -618,6 +688,8 @@ public class ReportsActivity extends AppCompatActivity {
         bl.setHorizontalAlignment(Legend.LegendHorizontalAlignment.CENTER);
         bl.setVerticalAlignment(Legend.LegendVerticalAlignment.TOP);
         barChart.setExtraBottomOffset(6f);
+
+        // Spending trend line
         lineChart.getDescription().setEnabled(false);
         lineChart.setNoDataText(noData);
         lineChart.setTouchEnabled(false);
@@ -639,9 +711,12 @@ public class ReportsActivity extends AppCompatActivity {
         lineChart.setExtraBottomOffset(6f);
     }
 
+    // ------------------------------------------------------------------ lifecycle
+
     @Override
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
+        export.saveState(outState);
         outState.putString(STATE_MODE, mode == ReportPeriod.Type.CUSTOM ? "CUSTOM" : "MONTH");
         outState.putString(STATE_MONTH, monthKey);
         outState.putLong(STATE_FIRST, customFirstDay);
@@ -649,7 +724,22 @@ public class ReportsActivity extends AppCompatActivity {
     }
 
     @Override
+    public boolean onCreateOptionsMenu(android.view.Menu menu) {
+        getMenuInflater().inflate(R.menu.reports_menu, menu);
+        return true;
+    }
+
+    @Override
     public boolean onOptionsItemSelected(MenuItem item) {
+        if (item.getItemId() == R.id.action_export_pdf) {
+            // Export exactly the period that is on screen.
+            try {
+                export.startPdf(period);
+            } catch (RuntimeException e) {
+                android.widget.Toast.makeText(this, R.string.rep_load_error, android.widget.Toast.LENGTH_LONG).show();
+            }
+            return true;
+        }
         if (item.getItemId() == android.R.id.home) {
             finish();
             return true;

@@ -10,19 +10,22 @@ import android.widget.RadioGroup;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
+
 import androidx.appcompat.app.AlertDialog;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
+
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class RecurringActivity extends AppCompatActivity {
+/** Recurring income / expense rules (daily, weekly, monthly): list, add, edit, pause, delete. */
+public class RecurringActivity extends BaseActivity {
     private PlanRowAdapter adapter;
     private TextView emptyView;
     private List<RecurringRule> lastRules;
@@ -82,7 +85,7 @@ public class RecurringActivity extends AppCompatActivity {
     }
 
     private PlanRow row(RecurringRule r, long tomorrow) {
-        int color = getColor(r.isIncome() ? R.color.income : R.color.expense);
+        int color = ThemeColors.get(this, r.isIncome() ? R.attr.etIncome : R.attr.etExpense);
         String amount = (r.isIncome() ? "+ " : "- ") + MoneyUtils.format(r.amountPaisa);
         String title = r.note.isEmpty() ? r.category : r.category + " • " + r.note;
         StringBuilder l1 = new StringBuilder(PlanText.frequency(this, r.frequency))
@@ -129,6 +132,8 @@ public class RecurringActivity extends AppCompatActivity {
                 .show();
     }
 
+    // ------------------------------------------------------------------ editor dialog
+
     private void showEditor(RecurringRule existing) {
         View content = LayoutInflater.from(this).inflate(R.layout.dialog_recurring, null);
         RadioGroup typeGroup = content.findViewById(R.id.recTypeGroup);
@@ -161,7 +166,7 @@ public class RecurringActivity extends AppCompatActivity {
             noteInput.setText(existing.note);
             frequencySpinner.setSelection(Math.max(0, Arrays.asList(RecurrenceCalculator.ALL).indexOf(existing.frequency)));
         } else {
-            frequencySpinner.setSelection(2);
+            frequencySpinner.setSelection(2); // monthly
         }
 
         AlertDialog dialog = new AlertDialog.Builder(this)

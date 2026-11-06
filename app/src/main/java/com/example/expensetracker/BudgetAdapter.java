@@ -5,14 +5,17 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.ListAdapter;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.progressindicator.LinearProgressIndicator;
+
 import java.util.Objects;
 
+/** One row per expense category: its budget (if any), spending, remaining amount and % used. */
 public class BudgetAdapter extends ListAdapter<BudgetAdapter.Row, BudgetAdapter.VH> {
 
     public static final class Row {
@@ -37,6 +40,7 @@ public class BudgetAdapter extends ListAdapter<BudgetAdapter.Row, BudgetAdapter.
             public boolean areItemsTheSame(@NonNull Row a, @NonNull Row b) {
                 return Objects.equals(a.category, b.category);
             }
+
             @Override
             public boolean areContentsTheSame(@NonNull Row a, @NonNull Row b) {
                 return a.status.budgetPaisa == b.status.budgetPaisa
@@ -62,8 +66,11 @@ public class BudgetAdapter extends ListAdapter<BudgetAdapter.Row, BudgetAdapter.
         BudgetUi.bindProgress(h.progress, h.percent, s);
         if (s.hasBudget()) {
             h.progress.setVisibility(View.VISIBLE);
-            h.line1.setText(c.getString(R.string.budget_line_spent, MoneyUtils.format(s.spentPaisa), MoneyUtils.format(s.budgetPaisa)));
-            h.line2.setText(s.isOverspent() ? c.getString(R.string.budget_line_over, MoneyUtils.format(-s.remainingPaisa), s.percentText) : c.getString(R.string.budget_line_left, MoneyUtils.format(s.remainingPaisa), s.percentText));
+            h.line1.setText(c.getString(R.string.budget_line_spent,
+                    MoneyUtils.format(s.spentPaisa), MoneyUtils.format(s.budgetPaisa)));
+            h.line2.setText(s.isOverspent()
+                    ? c.getString(R.string.budget_line_over, MoneyUtils.format(-s.remainingPaisa), s.percentText)
+                    : c.getString(R.string.budget_line_left, MoneyUtils.format(s.remainingPaisa), s.percentText));
             h.line2.setVisibility(View.VISIBLE);
         } else {
             h.progress.setVisibility(View.GONE);
