@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Stage 5: semantic colours. Every theme (White, Blue, Red, Dark) defines all of them, so layouts and
+     code never hard-code a colour: they ask for ?attr/etXxx and always get the colour of the active theme. -->
+<resources>
+    <attr name="etBackground" format="color" />
+    <attr name="etSurface" format="color" />
+    <attr name="etTextPrimary" format="color" />
+    <attr name="etTextSecondary" format="color" />
+    <attr name="etTextTertiary" format="color" />
+    <attr name="etAccent" format="color" />
+    <attr name="etTrack" format="color" />
+    <attr name="etDivider" format="color" />
+    <attr name="etHero" format="color" />
+    <attr name="etOnHero" format="color" />
+    <attr name="etOnHeroMuted" format="color" />
+    <attr name="etHeroIncome" format="color" />
+    <attr name="etHeroExpense" format="color" />
+    <attr name="etIncome" format="color" />
+    <attr name="etExpense" format="color" />
+    <attr name="etWarning" format="color" />
+    <attr name="etExpenseLight" format="color" />
+    <attr name="etWarningLight" format="color" />
+    <attr name="etBannerText" format="color" />
+    <attr name="etChartText" format="color" />
+    <attr name="etChartGrid" format="color" />
+</resources>
