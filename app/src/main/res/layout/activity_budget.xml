@@ -45,6 +45,7 @@
     </LinearLayout>
 
     <androidx.cardview.widget.CardView
+        app:cardBackgroundColor="?attr/etSurface"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginStart="12dp"
@@ -88,7 +89,7 @@
                 android:layout_marginTop="10dp"
                 android:contentDescription="@string/cd_budget_progress"
                 android:max="100"
-                app:trackColor="@color/progress_track"
+                app:trackColor="?attr/etTrack"
                 app:trackCornerRadius="6dp"
                 app:trackThickness="12dp" />
 
@@ -108,7 +109,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@string/monthly_budget"
-                        android:textColor="#757575"
+                        android:textColor="?attr/etTextTertiary"
                         android:textSize="12sp" />
 
                     <TextView
@@ -129,7 +130,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@string/spent"
-                        android:textColor="#757575"
+                        android:textColor="?attr/etTextTertiary"
                         android:textSize="12sp" />
 
                     <TextView
@@ -151,7 +152,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@string/remaining"
-                        android:textColor="#757575"
+                        android:textColor="?attr/etTextTertiary"
                         android:textSize="12sp" />
 
                     <TextView

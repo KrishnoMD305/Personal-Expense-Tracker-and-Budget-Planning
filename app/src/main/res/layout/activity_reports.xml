@@ -6,7 +6,6 @@
     android:layout_height="match_parent"
     android:orientation="vertical">
 
-
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -192,11 +191,12 @@
                 android:layout_height="wrap_content"
                 android:gravity="center"
                 android:padding="24dp"
-                android:textColor="#757575"
+                android:textColor="?attr/etTextTertiary"
                 android:textSize="15sp"
                 android:visibility="gone" />
 
             <androidx.cardview.widget.CardView
+                app:cardBackgroundColor="?attr/etSurface"
                 android:id="@+id/summaryCard"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -217,7 +217,7 @@
                         android:id="@+id/periodTitle"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:textColor="#212121"
+                        android:textColor="?attr/etTextPrimary"
                         android:textSize="17sp"
                         android:textStyle="bold" />
                     <LinearLayout
@@ -236,14 +236,14 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="@string/rep_income"
-                                android:textColor="#757575"
+                                android:textColor="?attr/etTextTertiary"
                                 android:textSize="12sp" />
 
                             <TextView
                                 android:id="@+id/sumIncome"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:textColor="#212121"
+                                android:textColor="?attr/etTextPrimary"
                                 android:textSize="16sp"
                                 android:textStyle="bold" />
                         </LinearLayout>
@@ -258,14 +258,14 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="@string/rep_expenses"
-                                android:textColor="#757575"
+                                android:textColor="?attr/etTextTertiary"
                                 android:textSize="12sp" />
 
                             <TextView
                                 android:id="@+id/sumExpense"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:textColor="#212121"
+                                android:textColor="?attr/etTextPrimary"
                                 android:textSize="16sp"
                                 android:textStyle="bold" />
                         </LinearLayout>
@@ -286,14 +286,14 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="@string/rep_net"
-                                android:textColor="#757575"
+                                android:textColor="?attr/etTextTertiary"
                                 android:textSize="12sp" />
 
                             <TextView
                                 android:id="@+id/sumNet"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:textColor="#212121"
+                                android:textColor="?attr/etTextPrimary"
                                 android:textSize="16sp"
                                 android:textStyle="bold" />
                         </LinearLayout>
@@ -308,14 +308,14 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="@string/rep_savings_rate"
-                                android:textColor="#757575"
+                                android:textColor="?attr/etTextTertiary"
                                 android:textSize="12sp" />
 
                             <TextView
                                 android:id="@+id/sumSavingsRate"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:textColor="#212121"
+                                android:textColor="?attr/etTextPrimary"
                                 android:textSize="16sp"
                                 android:textStyle="bold" />
                         </LinearLayout>
@@ -325,13 +325,14 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="10dp"
-                        android:textColor="#757575"
+                        android:textColor="?attr/etTextTertiary"
                         android:textSize="12sp"
                         android:visibility="visible" />
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
 
             <androidx.cardview.widget.CardView
+                app:cardBackgroundColor="?attr/etSurface"
                 android:id="@+id/compareCard"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -352,7 +353,7 @@
                         android:id="@+id/compareTitle"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:textColor="#212121"
+                        android:textColor="?attr/etTextPrimary"
                         android:textSize="16sp"
                         android:textStyle="bold" />
                     <LinearLayout
@@ -364,6 +365,7 @@
             </androidx.cardview.widget.CardView>
 
             <androidx.cardview.widget.CardView
+                app:cardBackgroundColor="?attr/etSurface"
                 android:id="@+id/categoryCard"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -384,7 +386,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:text="@string/rep_category_title"
-                        android:textColor="#212121"
+                        android:textColor="?attr/etTextPrimary"
                         android:textSize="16sp"
                         android:textStyle="bold" />
                     <com.github.mikephil.charting.charts.PieChart
@@ -399,7 +401,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="12dp"
                         android:text="@string/rep_top_categories"
-                        android:textColor="#00695C"
+                        android:textColor="?attr/etAccent"
                         android:textSize="13sp"
                         android:textStyle="bold" />
                     <LinearLayout
@@ -411,6 +413,7 @@
             </androidx.cardview.widget.CardView>
 
             <androidx.cardview.widget.CardView
+                app:cardBackgroundColor="?attr/etSurface"
                 android:id="@+id/barCard"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -431,7 +434,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:text="@string/rep_bar_title"
-                        android:textColor="#212121"
+                        android:textColor="?attr/etTextPrimary"
                         android:textSize="16sp"
                         android:textStyle="bold" />
                     <TextView
@@ -439,7 +442,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="6dp"
-                        android:textColor="#757575"
+                        android:textColor="?attr/etTextTertiary"
                         android:textSize="12sp"
                         android:visibility="gone" />
                     <com.github.mikephil.charting.charts.BarChart
@@ -453,7 +456,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="12dp"
                         android:text="@string/rep_monthly_summary"
-                        android:textColor="#00695C"
+                        android:textColor="?attr/etAccent"
                         android:textSize="13sp"
                         android:textStyle="bold" />
                     <LinearLayout
@@ -465,6 +468,7 @@
             </androidx.cardview.widget.CardView>
 
             <androidx.cardview.widget.CardView
+                app:cardBackgroundColor="?attr/etSurface"
                 android:id="@+id/trendCard"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -485,7 +489,7 @@
                         android:id="@+id/trendTitle"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:textColor="#212121"
+                        android:textColor="?attr/etTextPrimary"
                         android:textSize="16sp"
                         android:textStyle="bold" />
                     <com.github.mikephil.charting.charts.LineChart
@@ -500,7 +504,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="12dp"
                         android:text="@string/rep_insights"
-                        android:textColor="#00695C"
+                        android:textColor="?attr/etAccent"
                         android:textSize="13sp"
                         android:textStyle="bold" />
                     <LinearLayout
@@ -512,6 +516,7 @@
             </androidx.cardview.widget.CardView>
 
             <androidx.cardview.widget.CardView
+                app:cardBackgroundColor="?attr/etSurface"
                 android:id="@+id/largestCard"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -532,7 +537,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:text="@string/rep_largest_title"
-                        android:textColor="#212121"
+                        android:textColor="?attr/etTextPrimary"
                         android:textSize="16sp"
                         android:textStyle="bold" />
                     <TextView
@@ -541,7 +546,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="8dp"
                         android:text="@string/rep_largest_expenses"
-                        android:textColor="#00695C"
+                        android:textColor="?attr/etAccent"
                         android:textSize="13sp"
                         android:textStyle="bold" />
                     <LinearLayout
@@ -555,7 +560,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="12dp"
                         android:text="@string/rep_largest_income"
-                        android:textColor="#00695C"
+                        android:textColor="?attr/etAccent"
                         android:textSize="13sp"
                         android:textStyle="bold" />
                     <LinearLayout
@@ -567,6 +572,7 @@
             </androidx.cardview.widget.CardView>
 
             <androidx.cardview.widget.CardView
+                app:cardBackgroundColor="?attr/etSurface"
                 android:id="@+id/budgetSectionCard"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -587,7 +593,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:text="@string/rep_budget_title"
-                        android:textColor="#212121"
+                        android:textColor="?attr/etTextPrimary"
                         android:textSize="16sp"
                         android:textStyle="bold" />
                     <TextView
@@ -595,7 +601,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="8dp"
-                        android:textColor="#757575"
+                        android:textColor="?attr/etTextTertiary"
                         android:textSize="12sp"
                         android:visibility="gone" />
                     <LinearLayout

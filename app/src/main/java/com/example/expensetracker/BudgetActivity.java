@@ -22,10 +22,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-/** Monthly budget setup, category budgets, and live progress (spent / remaining / % used). */
+
 public class BudgetActivity extends BaseActivity {
     private static final String STATE_MONTH = "month";
-    /** Navigation limit so month keys always stay valid. */
     private static final int MAX_MONTHS_AWAY = 600;
 
     private String monthKey;
@@ -33,8 +32,7 @@ public class BudgetActivity extends BaseActivity {
     private List<String> categories;
     private BudgetAdapter adapter;
 
-    private TextView monthLabel, overallPercent, overallBudgetValue, overallSpentValue,
-            overallRemainingLabel, overallRemainingValue, alertBanner;
+    private TextView monthLabel, overallPercent, overallBudgetValue, overallSpentValue, overallRemainingLabel, overallRemainingValue, alertBanner;
     private LinearProgressIndicator overallProgress;
     private Button setOverallButton, copyButton;
 

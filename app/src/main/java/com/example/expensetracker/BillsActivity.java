@@ -31,7 +31,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-/** Bills: overdue / upcoming / paid lists, paid status, reminders and the notification permission. */
+
 public class BillsActivity extends BaseActivity {
     private static final String PREFS = "stage4_prefs";
     private static final String PREF_ASKED = "notification_permission_asked";
@@ -303,7 +303,7 @@ public class BillsActivity extends BaseActivity {
         banner.setVisibility(NotificationHelper.canNotify(this) ? View.GONE : View.VISIBLE);
     }
 
-    /** After the first bill is saved, ask once (Android 13+) so reminders can actually be shown. */
+
     private void maybeAskForNotifications() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU && !NotificationHelper.hasPermission(this)
                 && !prefs().getBoolean(PREF_ASKED, false)) {

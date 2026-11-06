@@ -24,7 +24,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-/** Recurring income / expense rules (daily, weekly, monthly): list, add, edit, pause, delete. */
+/** Recurring income / expense rules(daily, weekly, monthly): list, add, edit, pause, delete. */
 public class RecurringActivity extends BaseActivity {
     private PlanRowAdapter adapter;
     private TextView emptyView;

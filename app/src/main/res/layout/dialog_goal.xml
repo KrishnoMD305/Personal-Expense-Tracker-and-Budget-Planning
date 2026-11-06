@@ -76,7 +76,7 @@
             android:id="@+id/goalFormError"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:textColor="@color/expense"
+            android:textColor="?attr/etExpense"
             android:textSize="13sp"
             android:visibility="gone" />
     </LinearLayout>

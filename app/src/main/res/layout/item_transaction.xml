@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.cardview.widget.CardView
+    app:cardBackgroundColor="?attr/etSurface"
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
@@ -27,7 +28,7 @@
                 android:id="@+id/itemCategory"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textColor="#212121"
+                android:textColor="?attr/etTextPrimary"
                 android:textSize="16sp"
                 android:textStyle="bold" />
 
@@ -38,7 +39,7 @@
                 android:layout_marginTop="2dp"
                 android:ellipsize="end"
                 android:maxLines="1"
-                android:textColor="#757575"
+                android:textColor="?attr/etTextTertiary"
                 android:textSize="13sp" />
         </LinearLayout>
 

@@ -30,7 +30,6 @@ public class MainActivity extends BaseActivity {
     private String boundMonth;
     private LiveData<MonthOverview> budgetSource;
 
-    // Stage 4: planning summaries (savings goals, recurring transactions, bills)
     private TextView goalsBadge, goalsLine1, goalsLine2, recurringBadge, recurringLine1, recurringLine2,
             billsBadge, billsLine1, billsLine2;
     private LinearProgressIndicator goalsProgress;
@@ -92,7 +91,6 @@ public class MainActivity extends BaseActivity {
         findViewById(R.id.reportsButton).setOnClickListener(v ->
                 startActivity(new Intent(this, ReportsActivity.class)));
 
-        // Stage 4: planning card. Each section opens its screen; LiveData keeps the numbers current.
         findViewById(R.id.goalsSection).setOnClickListener(v ->
                 startActivity(new Intent(this, GoalsActivity.class)));
         findViewById(R.id.recurringSection).setOnClickListener(v ->
@@ -144,7 +142,7 @@ public class MainActivity extends BaseActivity {
         renderPlanning();          // "today" may have changed: overdue bills, days left, forecast window
     }
 
-    // ------------------------------------------------------------------ Stage 4 dashboard
+
 
     private void renderPlanning() {
         if (lastGoals == null && lastRules == null && lastBills == null) return;
@@ -274,7 +272,7 @@ public class MainActivity extends BaseActivity {
     }
 
     private void refreshSummary() {
-        long balance = totalIncome - totalExpense; // exact: whole paisa
+        long balance = totalIncome - totalExpense;
         balanceView.setText(MoneyUtils.format(balance));
         balanceView.setTextColor(ThemeColors.get(this,
                 balance < 0 ? R.attr.etHeroExpense : R.attr.etOnHero));
@@ -288,7 +286,6 @@ public class MainActivity extends BaseActivity {
         startActivity(i);
     }
 
-    /** Long-press menu: Edit or Delete (Stage 1 long-press delete is still one tap away). */
     private void showOptions(Transaction t) {
         new AlertDialog.Builder(this)
                 .setTitle(t.category)
@@ -307,7 +304,6 @@ public class MainActivity extends BaseActivity {
                 .setNegativeButton(android.R.string.cancel, null)
                 .setPositiveButton(R.string.delete, (d, w) -> {
                     AppDatabase.WRITE_EXECUTOR.execute(() -> dao.delete(t));
-                    // Totals and budgets refresh by themselves through LiveData; offer an undo.
                     Snackbar.make(findViewById(R.id.mainRoot), R.string.deleted, Snackbar.LENGTH_LONG)
                             .setAction(R.string.undo, v ->
                                     AppDatabase.WRITE_EXECUTOR.execute(() -> dao.insert(t)))

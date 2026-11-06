@@ -41,13 +41,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
-/**
- * Stage 3: category pie/donut chart, monthly income-vs-expense bars, summaries, month-to-month
- * comparison, spending insights and budget-vs-actual, for a chosen month or a custom date range.
- *
- * <p>Every number comes from {@link ReportCalculator} over live Room data. Changing the period
- * detaches the old LiveData and attaches a new one, so the screen can never show stale figures.
- */
+
 public class ReportsActivity extends BaseActivity {
     private static final String STATE_MODE = "mode";
     private static final String STATE_MONTH = "month";
@@ -591,7 +585,6 @@ public class ReportsActivity extends BaseActivity {
         }
     }
 
-    // ------------------------------------------------------------------ small helpers
 
     /** Adds a two-line row (title/subtitle on the left, value/sub-value on the right). */
     private void addRow(ViewGroup parent, String title, String subtitle, String value, int valueColor,
@@ -732,7 +725,7 @@ public class ReportsActivity extends BaseActivity {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == R.id.action_export_pdf) {
-            // Export exactly the period that is on screen.
+
             try {
                 export.startPdf(period);
             } catch (RuntimeException e) {

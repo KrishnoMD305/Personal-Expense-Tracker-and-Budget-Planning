@@ -11,7 +11,7 @@ import com.google.android.material.progressindicator.LinearProgressIndicator;
 
 import java.util.List;
 
-/** Small view helpers shared by the dashboard and the budget screen. */
+
 final class BudgetUi {
     private BudgetUi() {}
 
@@ -28,7 +28,6 @@ final class BudgetUi {
         }
     }
 
-    /** Fills a progress bar and its "NN%" label from a status (hidden when no budget is set). */
     static void bindProgress(LinearProgressIndicator bar, TextView percent, BudgetStatus s) {
         Context c = bar.getContext();
         int color = colorFor(c, s.level);

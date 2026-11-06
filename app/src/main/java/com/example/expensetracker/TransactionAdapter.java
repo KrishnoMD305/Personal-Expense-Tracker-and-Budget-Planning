@@ -29,13 +29,10 @@ public class TransactionAdapter extends ListAdapter<Transaction, TransactionAdap
     private final OnItemClick clickListener;
     private final OnItemLongClick listener;
     private final SimpleDateFormat dateFormat = new SimpleDateFormat("dd MMM yyyy", Locale.getDefault());
-
-    /** Stage 1 constructor (long-press only), kept for compatibility. */
     public TransactionAdapter(OnItemLongClick listener) {
         this(null, listener);
     }
 
-    /** Stage 2: tap to edit, long-press for edit/delete options. */
     public TransactionAdapter(OnItemClick clickListener, OnItemLongClick listener) {
         super(new DiffUtil.ItemCallback<Transaction>() {
             @Override

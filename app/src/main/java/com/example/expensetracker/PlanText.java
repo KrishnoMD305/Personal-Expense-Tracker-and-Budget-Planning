@@ -4,7 +4,6 @@ import android.content.Context;
 
 import androidx.core.content.ContextCompat;
 
-/** Text and colour rules shared by the Stage 4 screens and the dashboard. */
 final class PlanText {
     private PlanText() {}
 
@@ -12,7 +11,6 @@ final class PlanText {
         return NotificationHelper.daysText(c, n);
     }
 
-    /** "Deadline 12 Dec 2026 • 56 days left", "... • due today", "... • overdue by 3 days", or "No deadline". */
     static String goalDeadline(Context c, GoalStatus s, long deadlineMillis) {
         if (!s.hasDeadline) return c.getString(R.string.goal_no_deadline);
         String date = PlanDates.format(deadlineMillis);
@@ -39,7 +37,6 @@ final class PlanText {
         return c.getString(R.string.freq_monthly);
     }
 
-    /** "Due 20 Oct 2026 • in 3 days" / "• due today" / "• overdue by 2 days". */
     static String billDue(Context c, Bill b, long today) {
         String date = PlanDates.format(b.dueDateMillis);
         int d = BillCalculator.daysUntilDue(b, today);

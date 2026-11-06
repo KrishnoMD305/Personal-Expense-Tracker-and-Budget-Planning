@@ -16,7 +16,6 @@ import com.google.android.material.progressindicator.LinearProgressIndicator;
 import java.util.ArrayList;
 import java.util.List;
 
-/** One goal: progress, contributions, contribution history, edit / archive / delete. */
 public class GoalDetailActivity extends BaseActivity {
     public static final String EXTRA_GOAL_ID = "goal_id";
 
@@ -150,7 +149,6 @@ public class GoalDetailActivity extends BaseActivity {
                 .setPositiveButton(R.string.delete, (d, w) ->
                         GoalRepository.delete(this, goalId, err -> {
                             if (err != null) Toast.makeText(this, err, Toast.LENGTH_SHORT).show();
-                            // success: the observer sees the goal disappear and closes this screen
                         }))
                 .show();
     }

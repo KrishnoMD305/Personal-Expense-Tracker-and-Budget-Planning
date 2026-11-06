@@ -5,7 +5,7 @@ import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.util.Locale;
 
-/** Exact money handling: amounts are parsed with BigDecimal and stored as whole paisa. */
+
 public final class MoneyUtils {
     public static final String SYMBOL = "\u09F3"; // ৳
     public static final long MAX_PAISA = 99_999_999_999L; // 999,999,999.99 BDT
@@ -18,7 +18,6 @@ public final class MoneyUtils {
         }
     }
 
-    /** Parses user input such as "1,250.50" into paisa. Throws with a user-facing message. */
     public static long parseToPaisa(String input) throws InvalidAmountException {
         if (input == null || input.trim().isEmpty()) {
             throw new InvalidAmountException("Amount is required");
@@ -48,27 +47,23 @@ public final class MoneyUtils {
         return paisa;
     }
 
-    /** Formats paisa as "৳ 1,250.50" (negative: "-৳ 300.00"). */
     public static String format(long paisa) {
         DecimalFormat df = new DecimalFormat("#,##0.00", DecimalFormatSymbols.getInstance(Locale.US));
         String body = SYMBOL + " " + df.format(BigDecimal.valueOf(Math.abs(paisa), 2));
         return paisa < 0 ? "-" + body : body;
     }
 
-    /** Stage 5: "1250.50" - exact, no symbol, no grouping (what spreadsheets want). Negative: "-300.00". */
     public static String plain(long paisa) {
         BigDecimal v = BigDecimal.valueOf(paisa, 2);
         return v.setScale(2).toPlainString();
     }
 
-    /** Stage 5: "1,250.50" - exact, with thousands separators but no currency symbol (used in PDF tables). */
     public static String grouped(long paisa) {
         DecimalFormat df = new DecimalFormat("#,##0.00", DecimalFormatSymbols.getInstance(Locale.US));
         String body = df.format(BigDecimal.valueOf(Math.abs(paisa), 2));
         return paisa < 0 ? "-" + body : body;
     }
 
-    /** Stage 5: "BDT 1,250.50" - used in PDF reports, where the taka sign may be missing from a device font. */
     public static String formatBdt(long paisa) {
         return paisa < 0 ? "-BDT " + grouped(-paisa) : "BDT " + grouped(paisa);
     }

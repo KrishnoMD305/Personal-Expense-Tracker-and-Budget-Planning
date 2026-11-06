@@ -1,53 +1,103 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- Stage 6: Firebase (sign-in and cloud backup) talks to Google's servers. -->
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+
+    <!-- Stage 4: bill reminders. Runtime permission on Android 13+ (requested from the Bills screen). -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+
     <application
         android:name=".ExpenseTrackerApp"
         android:allowBackup="true"
+        android:dataExtractionRules="@xml/data_extraction_rules"
+        android:fullBackupContent="@xml/backup_rules"
         android:icon="@drawable/ic_launcher"
         android:roundIcon="@drawable/ic_launcher"
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@style/Theme.ExpenseTracker">
+
+        <!-- Stage 5: animated welcome screen is the launcher entry; it opens the Dashboard and finishes itself. -->
         <activity
-            android:name=".MainActivity"
-            android:exported="true">
+            android:name=".SplashActivity"
+            android:exported="true"
+            android:theme="@style/Theme.ExpenseTracker.Splash">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <activity
+            android:name=".MainActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".LockActivity"
+            android:exported="false"
+            android:launchMode="singleTop" />
+
+        <activity
+            android:name=".SettingsActivity"
+            android:exported="false"
+            android:label="@string/settings"
+            android:parentActivityName=".MainActivity" />
+
+        <!-- Stage 6: Firebase account + cloud backup. configChanges keeps a running upload/restore dialog stable on rotation. -->
+        <activity
+            android:name=".CloudAccountActivity"
+            android:configChanges="orientation|screenSize|keyboardHidden"
+            android:exported="false"
+            android:label="@string/cloud_account"
+            android:parentActivityName=".SettingsActivity"
+            android:windowSoftInputMode="adjustResize" />
+
+        <activity
+            android:name=".AboutActivity"
+            android:exported="false"
+            android:label="@string/about"
+            android:parentActivityName=".SettingsActivity" />
+
         <activity
             android:name=".AddTransactionActivity"
             android:exported="false"
             android:label="@string/add_transaction"
             android:parentActivityName=".MainActivity"
             android:windowSoftInputMode="adjustResize" />
+
         <activity
             android:name=".BudgetActivity"
             android:exported="false"
             android:label="@string/budgets"
             android:parentActivityName=".MainActivity" />
+
         <activity
             android:name=".ReportsActivity"
             android:exported="false"
             android:label="@string/reports"
             android:parentActivityName=".MainActivity" />
+
+        <!-- Stage 4 -->
         <activity
             android:name=".GoalsActivity"
             android:exported="false"
             android:label="@string/goals"
             android:parentActivityName=".MainActivity" />
+
         <activity
             android:name=".GoalDetailActivity"
             android:exported="false"
             android:label="@string/goals"
             android:parentActivityName=".GoalsActivity" />
+
         <activity
             android:name=".RecurringActivity"
             android:exported="false"
             android:label="@string/recurring"
             android:parentActivityName=".MainActivity" />
+
         <activity
             android:name=".BillsActivity"
             android:exported="false"

@@ -6,6 +6,7 @@
     android:orientation="vertical">
 
     <androidx.cardview.widget.CardView
+        app:cardBackgroundColor="?attr/etSurface"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_margin="12dp"
@@ -28,7 +29,7 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:textColor="#212121"
+                    android:textColor="?attr/etTextPrimary"
                     android:textSize="18sp"
                     android:textStyle="bold" />
 
@@ -47,7 +48,7 @@
                 android:layout_marginTop="10dp"
                 android:contentDescription="@string/cd_goal_progress"
                 android:max="100"
-                app:trackColor="@color/progress_track"
+                app:trackColor="?attr/etTrack"
                 app:trackCornerRadius="6dp"
                 app:trackThickness="12dp" />
 
@@ -56,7 +57,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
-                android:textColor="#424242"
+                android:textColor="?attr/etTextSecondary"
                 android:textSize="14sp" />
 
             <TextView
@@ -64,7 +65,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="2dp"
-                android:textColor="#616161"
+                android:textColor="?attr/etTextTertiary"
                 android:textSize="13sp" />
 
             <TextView
@@ -72,7 +73,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="2dp"
-                android:textColor="#616161"
+                android:textColor="?attr/etTextTertiary"
                 android:textSize="13sp" />
 
             <Button
@@ -110,7 +111,7 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:text="@string/delete"
-                    android:textColor="@color/expense" />
+                    android:textColor="?attr/etExpense" />
             </LinearLayout>
         </LinearLayout>
     </androidx.cardview.widget.CardView>
@@ -145,7 +146,7 @@
             android:gravity="center"
             android:padding="24dp"
             android:text="@string/goal_history_empty"
-            android:textColor="#757575"
+            android:textColor="?attr/etTextTertiary"
             android:textSize="15sp"
             android:visibility="gone" />
     </FrameLayout>

@@ -19,6 +19,7 @@
     <string name="delete">Delete</string>
     <string name="cd_add">Add transaction</string>
 
+
     <string name="edit_transaction">Edit Transaction</string>
     <string name="update_transaction">Update Transaction</string>
     <string name="updated">Transaction updated</string>
@@ -28,6 +29,7 @@
     <string name="tx_not_found">This transaction no longer exists</string>
     <string name="save_failed">Could not save. Please try again.</string>
     <string name="ok">OK</string>
+
 
     <string name="budgets">Budgets</string>
     <string name="monthly_budget">Monthly budget</string>
@@ -110,6 +112,7 @@
     <string name="cd_line_chart">Line chart of spending over time</string>
     <string name="cd_report_progress">Loading report</string>
 
+
     <string name="clear">Clear</string>
     <plurals name="days_count">
         <item quantity="one">%d day</item>
@@ -122,6 +125,7 @@
     <string name="dash_today">today</string>
     <string name="dash_in">in %1$s</string>
     <string name="dash_overdue_by">overdue by %1$s</string>
+
 
     <string name="dash_goals_title">Savings goals</string>
     <string name="dash_goals_none">No savings goals yet. Tap to create one.</string>
@@ -146,6 +150,7 @@
     <string name="dash_bills_no_overdue">No overdue bills</string>
     <string name="dash_bills_soon">Due in the next %1$d days: %2$s • %3$s</string>
     <string name="dash_bills_next">Next: %1$s • %2$s • %3$s</string>
+
 
     <string name="goals">Savings goals</string>
     <string name="goals_intro">Set a target, add contributions, and watch the progress bar fill. Contributions are tracked separately and do not change your balance.</string>
@@ -183,6 +188,7 @@
     <string name="goal_delete_contribution_title">Delete contribution?</string>
     <string name="goal_delete_contribution_message">%1$s on %2$s will be removed from this goal.</string>
     <string name="cd_goal_progress">Savings goal progress</string>
+
 
     <string name="recurring">Recurring transactions</string>
     <string name="rec_intro">Scheduled income and expenses are added to your history automatically on their due date. Each date is only ever added once.</string>
@@ -248,6 +254,7 @@
         <item>1 week before</item>
     </string-array>
 
+
     <string name="channel_bills_name">Bill reminders</string>
     <string name="channel_bills_desc">Reminders for bills that are due soon or overdue</string>
     <string name="notif_due_in">Due in %1$s • %2$s</string>
@@ -276,4 +283,172 @@
         <item>Entertainment</item>
         <item>Other Expense</item>
     </string-array>
+
+    <string name="welcome_message">Welcome to the Personal Expense Tracker and Budget Planning Application</string>
+    <string name="settings">Settings</string>
+    <string name="about">About</string>
+    <string name="about_text">Personal_Expense_tracker_and_Budget_planning_ver_2026.0.0\n\nThis app is made for academic purposes.\n\nMade by\nKrishno Mondol\nDepartment of CSE,KUET\nKhulna, Bangladesh</string>
+    <string name="theme_white">White</string>
+    <string name="theme_blue">Blue</string>
+    <string name="theme_red">Red</string>
+    <string name="theme_dark">Dark</string>
+    <string name="theme_sample">Aa</string>
+    <string name="theme_selected_label">\u2713 %1$s</string>
+    <string name="theme_selected_cd">%1$s, selected</string>
+    <string name="settings_appearance">Appearance</string>
+    <string name="settings_theme_hint">Choose a theme. It is applied to every screen and remembered.</string>
+
+
+    <string name="settings_security">Security</string>
+    <string name="settings_lock">Lock the app with a PIN</string>
+    <string name="settings_lock_hint">Ask for a 4\u20136 digit PIN when the app is opened. The PIN is stored only as a salted hash and cannot be recovered: if you forget it, the only way back in is to clear the app\u2019s data in Android settings. Keep a backup.</string>
+    <string name="settings_change_pin">Change PIN</string>
+    <string name="settings_biometric">Unlock with fingerprint / face</string>
+    <string name="settings_biometric_unavailable">Not available: this device has no strong biometric set up. The PIN always works.</string>
+    <string name="settings_hide_content">Hide app content in recent apps and screenshots</string>
+    <string name="lock_title">App locked</string>
+    <string name="lock_enter_pin">Enter your PIN to continue</string>
+    <string name="lock_wrong_pin">Wrong PIN. %1$d attempt(s) left before a short wait.</string>
+    <string name="lock_try_again">Too many wrong PINs. Try again in %1$d s.</string>
+    <string name="lock_biometric_title">Unlock Expense Tracker</string>
+    <string name="lock_biometric_subtitle">Use your fingerprint or face</string>
+    <string name="lock_use_pin">Use PIN</string>
+    <string name="lock_use_biometrics">Use fingerprint / face</string>
+    <string name="unlock">Unlock</string>
+    <string name="pin_hint">PIN</string>
+    <string name="pin_current_hint">Current PIN</string>
+    <string name="pin_new_hint">New PIN (4\u20136 digits)</string>
+    <string name="pin_confirm_hint">Repeat new PIN</string>
+    <string name="pin_set_title">Set a PIN</string>
+    <string name="pin_set_message">Choose 4 to 6 digits.</string>
+    <string name="pin_confirm_title">Turn off the lock</string>
+    <string name="pin_confirm_message">Enter your current PIN to turn the lock off.</string>
+    <string name="pin_change_title">Change PIN</string>
+    <string name="pin_change_message">Enter your current PIN, then the new one twice.</string>
+    <string name="pin_wrong">Wrong PIN</string>
+    <string name="pin_invalid">Use 4 to 6 digits only</string>
+    <string name="pin_mismatch">The PINs do not match</string>
+    <string name="pin_changed">PIN changed</string>
+    <string name="lock_enabled">App lock is on</string>
+    <string name="lock_disabled">App lock is off</string>
+    <string name="biometric_enabled">Fingerprint / face unlock is on</string>
+    <string name="biometric_confirm_title">Turn on biometric unlock</string>
+    <string name="biometric_confirm_subtitle">Confirm with your fingerprint or face</string>
+
+    <!-- Stage 5: data, export, backup -->
+    <string name="settings_data">Data and reports</string>
+    <string name="settings_export_csv">Export data to CSV</string>
+    <string name="settings_export_pdf">Create PDF financial report</string>
+    <string name="settings_backup">Create full backup</string>
+    <string name="settings_restore">Restore from backup</string>
+    <string name="settings_last_backup">Last backup: %1$s</string>
+    <string name="settings_no_backup">No backup made yet</string>
+    <string name="settings_backup_hint">A backup contains all transactions, budgets, goals, recurring rules, bills and your theme. It does not contain your PIN. Restoring replaces all current data.</string>
+    <string-array name="csv_choices">
+        <item>Transactions \u2013 all</item>
+        <item>Transactions \u2013 this month</item>
+        <item>Transactions \u2013 last 30 days</item>
+        <item>Budgets</item>
+        <item>Savings goals</item>
+        <item>Goal contributions</item>
+        <item>Recurring rules</item>
+        <item>Bills</item>
+    </string-array>
+    <string-array name="pdf_period_choices">
+        <item>This month</item>
+        <item>Last month</item>
+        <item>Last 90 days</item>
+        <item>This year</item>
+        <item>All time</item>
+    </string-array>
+    <string name="export_pdf_report">Export PDF report</string>
+    <string name="export_saved_title">File saved</string>
+    <string name="export_saved_message">%1$s\n%2$s</string>
+    <string name="export_failed_title">Export failed</string>
+    <string name="csv_summary">%1$d rows exported.</string>
+    <string name="backup_summary">%1$d transactions and %2$d records in total.</string>
+    <string name="working_export">Creating file\u2026</string>
+    <string name="working_restore_check">Checking backup file\u2026</string>
+    <string name="working_restore">Restoring data\u2026</string>
+    <string name="no_file_picker">No file picker is available on this device.</string>
+    <string name="no_viewer">No app was found that can open this file, or access to it was denied.</string>
+    <string name="err_io">Could not write the file (%1$s).</string>
+    <string name="open">Open</string>
+    <string name="share">Share</string>
+    <string name="close">Close</string>
+    <string name="restore">Restore</string>
+    <string name="unknown">unknown</string>
+    <string name="restore_confirm_title">Restore this backup?</string>
+    <string name="restore_confirm_message">Backup made: %1$s\n\n%2$d transactions, %3$d budgets, %4$d goals, %5$d contributions, %6$d recurring rules, %7$d bills.\n\nThis REPLACES all data currently in the app. A safety copy of the current data is saved first.</string>
+    <string name="restore_failed_title">Restore failed</string>
+    <string name="restore_failed_message">Your existing data was not changed.\n\n%1$s</string>
+    <string name="restore_done_title">Restore complete</string>
+    <string name="restore_done_message">Your data has been restored.</string>
+
+
+    <string name="cloud_account">Cloud account (Firebase)</string>
+    <string name="cloud_status_not_configured">Not set up: add google-services.json (see FIREBASE_SETUP_GUIDE.md)</string>
+    <string name="cloud_status_signed_out">Not signed in \u2022 tap to sign in and back up to the cloud</string>
+    <string name="cloud_status_signed_in">Signed in as %1$s</string>
+    <string name="cloud_not_configured_title">Firebase is not set up yet</string>
+    <string name="cloud_not_configured_text">This build has no google-services.json file, so cloud features are switched off. Everything else in the app works normally. Follow FIREBASE_SETUP_GUIDE.md (inside the project folder) to connect your Firebase project, then rebuild the app.</string>
+    <string name="cloud_account_title">Account</string>
+    <string name="cloud_account_hint">Sign in to keep a private copy of your data in the cloud. The app keeps working offline; your PIN is never uploaded.</string>
+    <string name="cloud_email_hint">Email</string>
+    <string name="cloud_password_hint">Password (at least 6 characters)</string>
+    <string name="cloud_sign_in">Sign in</string>
+    <string name="cloud_create_account">Create account</string>
+    <string name="cloud_forgot_password">Forgot password?</string>
+    <string name="cloud_sign_out">Sign out</string>
+    <string name="cloud_signed_in_as">Signed in as %1$s</string>
+    <string name="cloud_err_email">Enter a valid email address.</string>
+    <string name="cloud_err_password">The password needs at least 6 characters.</string>
+    <string name="cloud_working_signin">Signing in\u2026</string>
+    <string name="cloud_working_signup">Creating account\u2026</string>
+    <string name="cloud_working_reset">Sending email\u2026</string>
+    <string name="cloud_signin_failed_title">Sign-in failed</string>
+    <string name="cloud_signup_failed_title">Could not create the account</string>
+    <string name="cloud_reset_failed_title">Could not send the email</string>
+    <string name="cloud_reset_sent_title">Check your email</string>
+    <string name="cloud_reset_sent_message">If an account exists for %1$s, a password reset link has been sent to it.</string>
+    <string name="cloud_welcome_toast">Signed in</string>
+    <string name="cloud_signed_out_toast">Signed out. Your data on this device is untouched.</string>
+    <string name="cloud_sign_out_title">Sign out?</string>
+    <string name="cloud_sign_out_message">Your data stays on this device and in the cloud. Automatic backups pause until you sign in again.</string>
+
+    <string name="cloud_backup_title">Cloud backup</string>
+    <string name="cloud_backup_now">Back up now</string>
+    <string name="cloud_restore">Restore from cloud</string>
+    <string name="cloud_auto">Back up automatically once a day</string>
+    <string name="cloud_auto_hint">Runs in the background when the phone is online and only if something changed.</string>
+    <string name="cloud_delete">Delete my cloud data</string>
+    <string name="cloud_backup_hint">A cloud backup holds all transactions, budgets, goals, recurring rules, bills and your theme. Restoring replaces all data on this device (a safety copy is saved first).</string>
+    <string name="cloud_status_checking">Checking the cloud\u2026</string>
+    <string name="cloud_status_none">No cloud backup yet.</string>
+    <string name="cloud_status_remote">Cloud backup: %1$s \u2022 %2$d records \u2022 from %3$s</string>
+    <string name="cloud_status_other_device">The cloud copy was not made by this device\u2019s last backup. Restore it to use that data, or choose Back up now to replace it with this device\u2019s data.</string>
+    <string name="cloud_status_this_device">Last backup from this device: %1$s</string>
+    <string name="cloud_status_failed">Could not check the cloud: %1$s</string>
+    <string name="cloud_working_upload">Backing up to the cloud\u2026</string>
+    <string name="cloud_working_download">Downloading your cloud backup\u2026</string>
+    <string name="cloud_working_delete">Deleting cloud data\u2026</string>
+    <string name="cloud_backup_done_title">Backup complete</string>
+    <string name="cloud_backup_done_message">%1$d records are now safely stored in your cloud account.</string>
+    <string name="cloud_backup_unchanged_message">Your cloud backup is already up to date.</string>
+    <string name="cloud_backup_failed_title">Backup failed</string>
+    <string name="cloud_backup_failed_message">Your data on this device was not changed.\n\n%1$s</string>
+    <string name="cloud_conflict_title">Replace the cloud backup?</string>
+    <string name="cloud_conflict_message">The cloud already holds a backup from %1$s (%2$s) that this device has not seen.\n\nReplace it with this device\u2019s data, or restore it here instead.</string>
+    <string name="cloud_conflict_replace">Replace cloud</string>
+    <string name="cloud_conflict_restore">Restore cloud</string>
+    <string name="cloud_restore_failed_title">Could not use the cloud backup</string>
+    <string name="cloud_restore_confirm_title">Restore from the cloud?</string>
+    <string name="cloud_restore_confirm_message">Cloud backup made: %1$s\n\n%2$d transactions, %3$d budgets, %4$d goals, %5$d contributions, %6$d recurring rules, %7$d bills.\n\nThis REPLACES all data currently on this device. A safety copy of the current data is saved first.</string>
+    <string name="cloud_found_title">Cloud backup found</string>
+    <string name="cloud_found_message">This device has no data yet, but your account has a cloud backup. Restore it now?</string>
+    <string name="cloud_delete_title">Delete your cloud data?</string>
+    <string name="cloud_delete_message">Every record stored in the cloud for this account will be deleted. The data on this device is not touched. This cannot be undone.</string>
+    <string name="cloud_deleted_toast">Cloud data deleted</string>
+    <string name="cloud_auto_on_toast">Daily cloud backup is on</string>
+    <string name="cloud_delete_failed_title">Could not delete</string>
 </resources>

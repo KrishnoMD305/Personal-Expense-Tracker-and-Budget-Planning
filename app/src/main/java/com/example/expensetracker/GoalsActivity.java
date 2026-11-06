@@ -14,7 +14,6 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import java.util.ArrayList;
 import java.util.List;
 
-/** All savings goals with progress bars; tap one for its contribution history and management. */
 public class GoalsActivity extends BaseActivity {
     private PlanRowAdapter adapter;
     private TextView emptyView;
@@ -52,7 +51,7 @@ public class GoalsActivity extends BaseActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        render(); // "days left" changes with the date
+        render();
     }
 
     private void render() {

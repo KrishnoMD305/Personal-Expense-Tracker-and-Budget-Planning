@@ -17,7 +17,7 @@
             android:id="@+id/rowTitle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textColor="#212121"
+            android:textColor="?attr/etTextPrimary"
             android:textSize="14sp"
             android:textStyle="bold" />
 
@@ -26,7 +26,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="2dp"
-            android:textColor="#757575"
+            android:textColor="?attr/etTextTertiary"
             android:textSize="12sp" />
     </LinearLayout>
 
@@ -41,7 +41,7 @@
             android:id="@+id/rowValue"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textColor="#212121"
+            android:textColor="?attr/etTextPrimary"
             android:textSize="14sp"
             android:textStyle="bold" />
 

@@ -11,12 +11,11 @@
         android:layout_height="match_parent"
         android:orientation="vertical">
 
-        <!-- Shown by the Bills screen when notifications are off -->
         <LinearLayout
             android:id="@+id/notifBanner"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="@color/warning_light"
+            android:background="?attr/etWarningLight"
             android:gravity="center_vertical"
             android:orientation="horizontal"
             android:paddingStart="16dp"
@@ -31,7 +30,7 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:text="@string/notif_banner_text"
-                android:textColor="#212121"
+                android:textColor="?attr/etTextPrimary"
                 android:textSize="13sp" />
 
             <Button
@@ -49,7 +48,7 @@
             android:paddingStart="16dp"
             android:paddingTop="8dp"
             android:paddingEnd="16dp"
-            android:textColor="#616161"
+            android:textColor="?attr/etTextTertiary"
             android:textSize="13sp" />
 
         <FrameLayout
@@ -72,7 +71,7 @@
                 android:layout_gravity="center"
                 android:gravity="center"
                 android:padding="24dp"
-                android:textColor="#757575"
+                android:textColor="?attr/etTextTertiary"
                 android:textSize="15sp"
                 android:visibility="gone" />
         </FrameLayout>
@@ -85,5 +84,5 @@
         android:layout_gravity="bottom|end"
         android:layout_margin="16dp"
         app:srcCompat="@android:drawable/ic_input_add"
-        app:tint="@color/on_primary" />
+        app:tint="?attr/etOnHero" />
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

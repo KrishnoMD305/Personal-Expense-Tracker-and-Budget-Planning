@@ -1,11 +1,163 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <style name="Theme.ExpenseTracker" parent="Theme.MaterialComponents.Light.DarkActionBar">
-        <item name="colorPrimary">@color/primary</item>
-        <item name="colorPrimaryVariant">@color/primary_dark</item>
-        <item name="colorOnPrimary">@color/on_primary</item>
-        <item name="colorSecondary">@color/accent</item>
-        <item name="colorOnSecondary">@color/on_primary</item>
-        <item name="android:windowBackground">@color/background</item>
+
+    <style name="Theme.ExpenseTracker" parent="Theme.ExpenseTracker.White" />
+
+    <style name="Theme.ExpenseTracker.White" parent="Theme.MaterialComponents.Light.DarkActionBar">
+        <item name="colorPrimary">@color/theme_white_primary</item>
+        <item name="colorPrimaryVariant">@color/theme_white_primary_dark</item>
+        <item name="colorOnPrimary">@color/theme_white_on_primary</item>
+        <item name="colorSecondary">@color/theme_white_accent</item>
+        <item name="colorOnSecondary">@color/theme_white_on_primary</item>
+        <item name="colorSurface">@color/theme_white_surface</item>
+        <item name="colorOnSurface">@color/theme_white_t1</item>
+        <item name="colorOnBackground">@color/theme_white_t1</item>
+        <item name="android:colorBackground">@color/theme_white_bg</item>
+        <item name="android:windowBackground">@color/theme_white_bg</item>
+        <item name="android:statusBarColor">@color/theme_white_primary_dark</item>
+        <item name="android:textColorPrimary">@color/theme_white_t1</item>
+        <item name="android:textColorSecondary">@color/theme_white_t2</item>
+        <item name="android:textColorHint">@color/theme_white_t3</item>
+        <item name="etBackground">@color/theme_white_bg</item>
+        <item name="etSurface">@color/theme_white_surface</item>
+        <item name="etTextPrimary">@color/theme_white_t1</item>
+        <item name="etTextSecondary">@color/theme_white_t2</item>
+        <item name="etTextTertiary">@color/theme_white_t3</item>
+        <item name="etAccent">@color/theme_white_accent</item>
+        <item name="etTrack">@color/theme_white_track</item>
+        <item name="etDivider">@color/theme_white_divider</item>
+        <item name="etHero">@color/theme_white_hero</item>
+        <item name="etOnHero">@color/theme_white_on_hero</item>
+        <item name="etOnHeroMuted">@color/theme_white_hero_muted</item>
+        <item name="etHeroIncome">@color/theme_white_hero_income</item>
+        <item name="etHeroExpense">@color/theme_white_hero_expense</item>
+        <item name="etIncome">@color/theme_white_income</item>
+        <item name="etExpense">@color/theme_white_expense</item>
+        <item name="etWarning">@color/theme_white_warning</item>
+        <item name="etExpenseLight">@color/theme_white_expense_light</item>
+        <item name="etWarningLight">@color/theme_white_warning_light</item>
+        <item name="etBannerText">@color/theme_white_banner_text</item>
+        <item name="etChartText">@color/theme_white_chart_text</item>
+        <item name="etChartGrid">@color/theme_white_chart_grid</item>
+    </style>
+
+    <style name="Theme.ExpenseTracker.Blue" parent="Theme.MaterialComponents.Light.DarkActionBar">
+        <item name="colorPrimary">@color/theme_blue_primary</item>
+        <item name="colorPrimaryVariant">@color/theme_blue_primary_dark</item>
+        <item name="colorOnPrimary">@color/theme_blue_on_primary</item>
+        <item name="colorSecondary">@color/theme_blue_accent</item>
+        <item name="colorOnSecondary">@color/theme_blue_on_primary</item>
+        <item name="colorSurface">@color/theme_blue_surface</item>
+        <item name="colorOnSurface">@color/theme_blue_t1</item>
+        <item name="colorOnBackground">@color/theme_blue_t1</item>
+        <item name="android:colorBackground">@color/theme_blue_bg</item>
+        <item name="android:windowBackground">@color/theme_blue_bg</item>
+        <item name="android:statusBarColor">@color/theme_blue_primary_dark</item>
+        <item name="android:textColorPrimary">@color/theme_blue_t1</item>
+        <item name="android:textColorSecondary">@color/theme_blue_t2</item>
+        <item name="android:textColorHint">@color/theme_blue_t3</item>
+        <item name="etBackground">@color/theme_blue_bg</item>
+        <item name="etSurface">@color/theme_blue_surface</item>
+        <item name="etTextPrimary">@color/theme_blue_t1</item>
+        <item name="etTextSecondary">@color/theme_blue_t2</item>
+        <item name="etTextTertiary">@color/theme_blue_t3</item>
+        <item name="etAccent">@color/theme_blue_accent</item>
+        <item name="etTrack">@color/theme_blue_track</item>
+        <item name="etDivider">@color/theme_blue_divider</item>
+        <item name="etHero">@color/theme_blue_hero</item>
+        <item name="etOnHero">@color/theme_blue_on_hero</item>
+        <item name="etOnHeroMuted">@color/theme_blue_hero_muted</item>
+        <item name="etHeroIncome">@color/theme_blue_hero_income</item>
+        <item name="etHeroExpense">@color/theme_blue_hero_expense</item>
+        <item name="etIncome">@color/theme_blue_income</item>
+        <item name="etExpense">@color/theme_blue_expense</item>
+        <item name="etWarning">@color/theme_blue_warning</item>
+        <item name="etExpenseLight">@color/theme_blue_expense_light</item>
+        <item name="etWarningLight">@color/theme_blue_warning_light</item>
+        <item name="etBannerText">@color/theme_blue_banner_text</item>
+        <item name="etChartText">@color/theme_blue_chart_text</item>
+        <item name="etChartGrid">@color/theme_blue_chart_grid</item>
+    </style>
+
+    <style name="Theme.ExpenseTracker.Red" parent="Theme.MaterialComponents.Light.DarkActionBar">
+        <item name="colorPrimary">@color/theme_red_primary</item>
+        <item name="colorPrimaryVariant">@color/theme_red_primary_dark</item>
+        <item name="colorOnPrimary">@color/theme_red_on_primary</item>
+        <item name="colorSecondary">@color/theme_red_accent</item>
+        <item name="colorOnSecondary">@color/theme_red_on_primary</item>
+        <item name="colorSurface">@color/theme_red_surface</item>
+        <item name="colorOnSurface">@color/theme_red_t1</item>
+        <item name="colorOnBackground">@color/theme_red_t1</item>
+        <item name="android:colorBackground">@color/theme_red_bg</item>
+        <item name="android:windowBackground">@color/theme_red_bg</item>
+        <item name="android:statusBarColor">@color/theme_red_primary_dark</item>
+        <item name="android:textColorPrimary">@color/theme_red_t1</item>
+        <item name="android:textColorSecondary">@color/theme_red_t2</item>
+        <item name="android:textColorHint">@color/theme_red_t3</item>
+        <item name="etBackground">@color/theme_red_bg</item>
+        <item name="etSurface">@color/theme_red_surface</item>
+        <item name="etTextPrimary">@color/theme_red_t1</item>
+        <item name="etTextSecondary">@color/theme_red_t2</item>
+        <item name="etTextTertiary">@color/theme_red_t3</item>
+        <item name="etAccent">@color/theme_red_accent</item>
+        <item name="etTrack">@color/theme_red_track</item>
+        <item name="etDivider">@color/theme_red_divider</item>
+        <item name="etHero">@color/theme_red_hero</item>
+        <item name="etOnHero">@color/theme_red_on_hero</item>
+        <item name="etOnHeroMuted">@color/theme_red_hero_muted</item>
+        <item name="etHeroIncome">@color/theme_red_hero_income</item>
+        <item name="etHeroExpense">@color/theme_red_hero_expense</item>
+        <item name="etIncome">@color/theme_red_income</item>
+        <item name="etExpense">@color/theme_red_expense</item>
+        <item name="etWarning">@color/theme_red_warning</item>
+        <item name="etExpenseLight">@color/theme_red_expense_light</item>
+        <item name="etWarningLight">@color/theme_red_warning_light</item>
+        <item name="etBannerText">@color/theme_red_banner_text</item>
+        <item name="etChartText">@color/theme_red_chart_text</item>
+        <item name="etChartGrid">@color/theme_red_chart_grid</item>
+    </style>
+
+    <style name="Theme.ExpenseTracker.Dark" parent="Theme.MaterialComponents">
+        <item name="colorPrimary">@color/theme_dark_primary</item>
+        <item name="colorPrimaryVariant">@color/theme_dark_primary_dark</item>
+        <item name="colorOnPrimary">@color/theme_dark_on_primary</item>
+        <item name="colorSecondary">@color/theme_dark_accent</item>
+        <item name="colorOnSecondary">@color/theme_dark_on_primary</item>
+        <item name="colorSurface">@color/theme_dark_surface</item>
+        <item name="colorOnSurface">@color/theme_dark_t1</item>
+        <item name="colorOnBackground">@color/theme_dark_t1</item>
+        <item name="android:colorBackground">@color/theme_dark_bg</item>
+        <item name="android:windowBackground">@color/theme_dark_bg</item>
+        <item name="android:statusBarColor">@color/theme_dark_primary_dark</item>
+        <item name="android:textColorPrimary">@color/theme_dark_t1</item>
+        <item name="android:textColorSecondary">@color/theme_dark_t2</item>
+        <item name="android:textColorHint">@color/theme_dark_t3</item>
+        <item name="etBackground">@color/theme_dark_bg</item>
+        <item name="etSurface">@color/theme_dark_surface</item>
+        <item name="etTextPrimary">@color/theme_dark_t1</item>
+        <item name="etTextSecondary">@color/theme_dark_t2</item>
+        <item name="etTextTertiary">@color/theme_dark_t3</item>
+        <item name="etAccent">@color/theme_dark_accent</item>
+        <item name="etTrack">@color/theme_dark_track</item>
+        <item name="etDivider">@color/theme_dark_divider</item>
+        <item name="etHero">@color/theme_dark_hero</item>
+        <item name="etOnHero">@color/theme_dark_on_hero</item>
+        <item name="etOnHeroMuted">@color/theme_dark_hero_muted</item>
+        <item name="etHeroIncome">@color/theme_dark_hero_income</item>
+        <item name="etHeroExpense">@color/theme_dark_hero_expense</item>
+        <item name="etIncome">@color/theme_dark_income</item>
+        <item name="etExpense">@color/theme_dark_expense</item>
+        <item name="etWarning">@color/theme_dark_warning</item>
+        <item name="etExpenseLight">@color/theme_dark_expense_light</item>
+        <item name="etWarningLight">@color/theme_dark_warning_light</item>
+        <item name="etBannerText">@color/theme_dark_banner_text</item>
+        <item name="etChartText">@color/theme_dark_chart_text</item>
+        <item name="etChartGrid">@color/theme_dark_chart_grid</item>
+    </style>
+
+
+    <style name="Theme.ExpenseTracker.Splash" parent="Theme.ExpenseTracker.White">
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
     </style>
 </resources>
