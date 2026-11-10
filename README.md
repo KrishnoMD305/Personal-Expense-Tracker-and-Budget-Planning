@@ -24,8 +24,6 @@ A full-featured, offline-first **Android app** for tracking income and expenses,
 - [Architecture & Design Decisions](#-architecture--design-decisions)
 - [Security & Privacy](#-security--privacy)
 - [Permissions](#-permissions)
-- [Roadmap](#-roadmap)
-- [Contributing](#-contributing)
 - [Author](#-author)
 - [License](#-license)
 
@@ -286,5 +284,14 @@ Department of Computer Science and Engineering, Khulna University of Engineering
 
 ---
 
+
 ## 📄 License
+
+This project is licensed under the MIT License.
+
+You are free to use, modify, and distribute this software
+under the terms and conditions of the MIT License.
+
+See the [LICENSE](LICENSE) file for more details.
+
 
