@@ -304,13 +304,13 @@ public class ReportCalculatorTest {
     @Test
     public void monthModeChartsSixMonthsEndingWithTheSelectedOneAcrossAYearBoundary() {
         ReportData d = report(ReportPeriod.month("2027-02"), list(
-                        inc(1000, "Salary", day(2026, 9, 1)),
-                        exp(200, "Food", day(2026, 12, 15)),
-                        inc(500, "Salary", day(2027, 1, 5)),
-                        exp(100, "Food", day(2027, 1, 20)),
-                        exp(50, "Food", day(2027, 2, 3)),
-                        exp(999, "Food", day(2026, 8, 31)),   // before the 6-month window
-                        exp(888, "Food", day(2027, 3, 1))),   // after the selected month
+                inc(1000, "Salary", day(2026, 9, 1)),
+                exp(200, "Food", day(2026, 12, 15)),
+                inc(500, "Salary", day(2027, 1, 5)),
+                exp(100, "Food", day(2027, 1, 20)),
+                exp(50, "Food", day(2027, 2, 3)),
+                exp(999, "Food", day(2026, 8, 31)),   // before the 6-month window
+                exp(888, "Food", day(2027, 3, 1))),   // after the selected month
                 new ArrayList<Budget>(), LATER);
         assertEquals(6, d.bars.size());
         assertFalse(d.barsTruncated);
@@ -336,12 +336,12 @@ public class ReportCalculatorTest {
     public void customRangeBarsAreClippedToTheRangeAndAddUpToTheSummary() {
         ReportPeriod p = ReportPeriod.custom(day(2026, 10, 15), day(2026, 12, 10));
         ReportData d = report(p, list(
-                        exp(7, "Food", day(2026, 10, 10)),    // before the range
-                        exp(100, "Food", day(2026, 10, 15)),
-                        exp(50, "Food", day(2026, 10, 31)),
-                        inc(300, "Salary", day(2026, 11, 5)),
-                        exp(20, "Food", day(2026, 12, 10)),
-                        exp(999, "Food", day(2026, 12, 11))), // after the range
+                exp(7, "Food", day(2026, 10, 10)),    // before the range
+                exp(100, "Food", day(2026, 10, 15)),
+                exp(50, "Food", day(2026, 10, 31)),
+                inc(300, "Salary", day(2026, 11, 5)),
+                exp(20, "Food", day(2026, 12, 10)),
+                exp(999, "Food", day(2026, 12, 11))), // after the range
                 new ArrayList<Budget>(), LATER);
         assertEquals(3, d.bars.size());
         assertFalse(d.barsTruncated);
@@ -412,9 +412,9 @@ public class ReportCalculatorTest {
     public void weeklyTrendForAQuarter() {
         ReportPeriod p = ReportPeriod.custom(day(2026, 1, 1), day(2026, 3, 31)); // 90 days
         ReportData d = report(p, list(
-                        exp(1, "Food", day(2026, 1, 7)),    // day 7  -> week 1
-                        exp(2, "Food", day(2026, 1, 8)),    // day 8  -> week 2
-                        exp(4, "Food", day(2026, 3, 31))),  // day 90 -> week 13 (a 6-day tail)
+                exp(1, "Food", day(2026, 1, 7)),    // day 7  -> week 1
+                exp(2, "Food", day(2026, 1, 8)),    // day 8  -> week 2
+                exp(4, "Food", day(2026, 3, 31))),  // day 90 -> week 13 (a 6-day tail)
                 new ArrayList<Budget>(), LATER);
         assertEquals(ReportData.Granularity.WEEK, d.trendGranularity);
         assertEquals(13, d.trend.size());
@@ -483,8 +483,8 @@ public class ReportCalculatorTest {
     public void currentMonthUsesElapsedDaysAndProjectsMonthEnd() {
         long now = at(2026, 10, 17, 12, 0);
         ReportData d = report(ReportPeriod.month("2026-10"), list(
-                        exp(1700, "Food", day(2026, 10, 5)),
-                        exp(1000, "Rent", day(2026, 10, 25))), // dated in the future: in totals, not in the pace
+                exp(1700, "Food", day(2026, 10, 5)),
+                exp(1000, "Rent", day(2026, 10, 25))), // dated in the future: in totals, not in the pace
                 new ArrayList<Budget>(), now);
         assertEquals(17, d.elapsedDays);
         assertEquals(tk(2700), d.current.expensePaisa);
@@ -541,11 +541,11 @@ public class ReportCalculatorTest {
                 budget("2026-10", "Health", 10000),
                 budget("2026-09", "Food", 1)));   // another month: must be ignored
         ReportData d = report(ReportPeriod.month("2026-10"), list(
-                        exp(2400, "Food", day(2026, 10, 2)),        // exactly 80%
-                        exp(1050, "Transport", day(2026, 10, 3)),   // 105%
-                        exp(7999, "Health", day(2026, 10, 4)),      // 79.99% must NOT look like 80%
-                        exp(5000, "Rent", day(2026, 10, 5)),        // no category budget
-                        inc(20000, "Salary", day(2026, 10, 1))),    // income never counts against a budget
+                exp(2400, "Food", day(2026, 10, 2)),        // exactly 80%
+                exp(1050, "Transport", day(2026, 10, 3)),   // 105%
+                exp(7999, "Health", day(2026, 10, 4)),      // 79.99% must NOT look like 80%
+                exp(5000, "Rent", day(2026, 10, 5)),        // no category budget
+                inc(20000, "Salary", day(2026, 10, 1))),    // income never counts against a budget
                 budgets, LATER);
 
         assertTrue(d.budget.periodSupported);
@@ -585,12 +585,12 @@ public class ReportCalculatorTest {
                 budget("2026-09", "Transport", 500)));
         ReportPeriod p = ReportPeriod.custom(day(2026, 9, 1), day(2026, 10, 31));
         ReportData d = report(p, list(
-                        exp(800, "Food", day(2026, 9, 5)),
-                        exp(700, "Rent", day(2026, 9, 6)),
-                        exp(1500, "Food", day(2026, 10, 5)),
-                        exp(1000, "Rent", day(2026, 10, 6)),
-                        exp(100, "Transport", day(2026, 9, 7)),
-                        exp(900, "Transport", day(2026, 10, 8))), // October has no Transport budget
+                exp(800, "Food", day(2026, 9, 5)),
+                exp(700, "Rent", day(2026, 9, 6)),
+                exp(1500, "Food", day(2026, 10, 5)),
+                exp(1000, "Rent", day(2026, 10, 6)),
+                exp(100, "Transport", day(2026, 9, 7)),
+                exp(900, "Transport", day(2026, 10, 8))), // October has no Transport budget
                 budgets, LATER);
 
         assertTrue(d.budget.periodSupported);

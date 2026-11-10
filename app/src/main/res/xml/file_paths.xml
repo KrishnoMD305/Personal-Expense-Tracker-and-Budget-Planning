@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Stage 7: the only folders the FileProvider may hand out. -->
+<paths>
+    <!-- stored receipts (read by the image viewer) -->
+    <files-path name="receipts" path="receipts/" />
+    <!-- where the camera app writes a new photo -->
+    <cache-path name="receipt_capture" path="receipt_capture/" />
+</paths>

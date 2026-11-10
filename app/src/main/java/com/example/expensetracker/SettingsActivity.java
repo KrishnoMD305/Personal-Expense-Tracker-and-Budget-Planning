@@ -1,5 +1,7 @@
 package com.example.expensetracker;
 
+import com.example.expensetracker.databinding.ItemThemeTileBinding;
+import com.example.expensetracker.databinding.ActivitySettingsBinding;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.Gravity;
@@ -26,34 +28,37 @@ import java.util.Locale;
 
 /** Stage 5: theme, app lock, exports, backup / restore and the link to About. Stage 6 adds the Firebase cloud account entry. */
 public class SettingsActivity extends BaseActivity {
+    private ActivitySettingsBinding binding;
     private AppSettings settings;
     private ExportController export;
     private SwitchMaterial switchLock, switchBiometric, switchHide;
     private View changePin;
     private TextView biometricNote, lastBackup, cloudSummary;
     private final MaterialCardView[] tiles = new MaterialCardView[ThemeManager.ALL.length];
-    private boolean binding;
+    private final ItemThemeTileBinding[] tileBindings = new ItemThemeTileBinding[ThemeManager.ALL.length];
+    private boolean bindingNow;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_settings);
+        binding = ActivitySettingsBinding.inflate(getLayoutInflater());
+        setContentView(binding.getRoot());
         if (getSupportActionBar() != null) getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         settings = AppSettings.get(this);
         export = new ExportController(this, savedInstanceState);
 
-        switchLock = findViewById(R.id.switchLock);
-        switchBiometric = findViewById(R.id.switchBiometric);
-        switchHide = findViewById(R.id.switchHide);
-        changePin = findViewById(R.id.changePinButton);
-        biometricNote = findViewById(R.id.biometricNote);
-        lastBackup = findViewById(R.id.lastBackupText);
-        cloudSummary = findViewById(R.id.cloudStatusSummary);
+        switchLock = binding.switchLock;
+        switchBiometric = binding.switchBiometric;
+        switchHide = binding.switchHide;
+        changePin = binding.changePinButton;
+        biometricNote = binding.biometricNote;
+        lastBackup = binding.lastBackupText;
+        cloudSummary = binding.cloudStatusSummary;
 
         buildThemeTiles();
 
         switchLock.setOnCheckedChangeListener((b, checked) -> {
-            if (binding) return;
+            if (bindingNow) return;
             if (checked) enableLock(); else disableLock();
         });
         changePin.setOnClickListener(v -> PinDialogs.change(this, pin -> {
@@ -61,21 +66,21 @@ public class SettingsActivity extends BaseActivity {
             Toast.makeText(this, R.string.pin_changed, Toast.LENGTH_SHORT).show();
         }));
         switchBiometric.setOnCheckedChangeListener((b, checked) -> {
-            if (binding) return;
+            if (bindingNow) return;
             if (checked) enableBiometric(); else settings.setBiometricEnabled(false);
         });
         switchHide.setOnCheckedChangeListener((b, checked) -> {
-            if (binding) return;
+            if (bindingNow) return;
             settings.setHideContent(checked);
             recreate();
         });
 
-        findViewById(R.id.exportCsvButton).setOnClickListener(v -> chooseCsv());
-        findViewById(R.id.exportPdfButton).setOnClickListener(v -> choosePdfPeriod());
-        findViewById(R.id.backupButton).setOnClickListener(v -> export.startBackup());
-        findViewById(R.id.restoreButton).setOnClickListener(v -> export.startRestore());
-        findViewById(R.id.cloudCard).setOnClickListener(v -> startActivity(new Intent(this, CloudAccountActivity.class)));
-        findViewById(R.id.aboutCard).setOnClickListener(v -> startActivity(new Intent(this, AboutActivity.class)));
+        binding.exportCsvButton.setOnClickListener(v -> chooseCsv());
+        binding.exportPdfButton.setOnClickListener(v -> choosePdfPeriod());
+        binding.backupButton.setOnClickListener(v -> export.startBackup());
+        binding.restoreButton.setOnClickListener(v -> export.startRestore());
+        binding.cloudCard.setOnClickListener(v -> startActivity(new Intent(this, CloudAccountActivity.class)));
+        binding.aboutCard.setOnClickListener(v -> startActivity(new Intent(this, AboutActivity.class)));
     }
 
     @Override
@@ -102,19 +107,21 @@ public class SettingsActivity extends BaseActivity {
     // ------------------------------------------------------------------ themes
 
     private void buildThemeTiles() {
-        LinearLayout[] rows = {findViewById(R.id.themeRow1), findViewById(R.id.themeRow2)};
+        LinearLayout[] rows = {binding.themeRow1, binding.themeRow2};
         LayoutInflater inflater = LayoutInflater.from(this);
         for (int i = 0; i < ThemeManager.ALL.length; i++) {
             final String id = ThemeManager.ALL[i];
             LinearLayout row = rows[i / 2];
-            MaterialCardView tile = (MaterialCardView) inflater.inflate(R.layout.item_theme_tile, row, false);
-            tile.findViewById(R.id.tilePreview).setBackgroundColor(ContextCompat.getColor(this, ThemeManager.previewBackground(id)));
-            tile.findViewById(R.id.tileBar).setBackgroundColor(ContextCompat.getColor(this, ThemeManager.previewBar(id)));
-            ((TextView) tile.findViewById(R.id.tileSample)).setTextColor(ContextCompat.getColor(this, ThemeManager.previewText(id)));
-            ((TextView) tile.findViewById(R.id.tileName)).setText(ThemeManager.nameRes(id));
+            ItemThemeTileBinding tb = ItemThemeTileBinding.inflate(inflater, row, false);
+            MaterialCardView tile = tb.getRoot();
+            tb.tilePreview.setBackgroundColor(ContextCompat.getColor(this, ThemeManager.previewBackground(id)));
+            tb.tileBar.setBackgroundColor(ContextCompat.getColor(this, ThemeManager.previewBar(id)));
+            tb.tileSample.setTextColor(ContextCompat.getColor(this, ThemeManager.previewText(id)));
+            tb.tileName.setText(ThemeManager.nameRes(id));
             tile.setOnClickListener(v -> selectTheme(id));
             row.addView(tile);
             tiles[i] = tile;
+            tileBindings[i] = tb;
         }
         markSelectedTile();
     }
@@ -128,7 +135,7 @@ public class SettingsActivity extends BaseActivity {
             tiles[i].setStrokeColor(ThemeColors.get(this, R.attr.etAccent));
             String name = getString(ThemeManager.nameRes(ThemeManager.ALL[i]));
             tiles[i].setContentDescription(selected ? getString(R.string.theme_selected_cd, name) : name);
-            ((TextView) tiles[i].findViewById(R.id.tileName)).setText(
+            tileBindings[i].tileName.setText(
                     selected ? getString(R.string.theme_selected_label, name) : name);
         }
     }
@@ -142,7 +149,7 @@ public class SettingsActivity extends BaseActivity {
     // ------------------------------------------------------------------ security
 
     private void bindState() {
-        binding = true;
+        bindingNow = true;
         boolean lock = settings.lockEnabled();
         switchLock.setChecked(lock);
         changePin.setVisibility(lock ? View.VISIBLE : View.GONE);
@@ -165,7 +172,7 @@ public class SettingsActivity extends BaseActivity {
                 ? getString(R.string.settings_last_backup, new SimpleDateFormat("dd MMM yyyy, HH:mm", Locale.getDefault()).format(new Date(last)))
                 : getString(R.string.settings_no_backup));
         bindCloudSummary();
-        binding = false;
+        bindingNow = false;
         markSelectedTile();
     }
 
@@ -181,9 +188,9 @@ public class SettingsActivity extends BaseActivity {
     }
 
     private void setSwitchQuietly(SwitchMaterial s, boolean checked) {
-        binding = true;
+        bindingNow = true;
         s.setChecked(checked);
-        binding = false;
+        bindingNow = false;
     }
 
     private void enableLock() {

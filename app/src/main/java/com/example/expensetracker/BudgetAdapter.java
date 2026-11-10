@@ -1,5 +1,6 @@
 package com.example.expensetracker;
 
+import com.example.expensetracker.databinding.ItemBudgetBinding;
 import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -53,8 +54,7 @@ public class BudgetAdapter extends ListAdapter<BudgetAdapter.Row, BudgetAdapter.
     @NonNull
     @Override
     public VH onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_budget, parent, false);
-        return new VH(v);
+        return new VH(ItemBudgetBinding.inflate(LayoutInflater.from(parent.getContext()), parent, false));
     }
 
     @Override
@@ -89,13 +89,13 @@ public class BudgetAdapter extends ListAdapter<BudgetAdapter.Row, BudgetAdapter.
         final TextView category, percent, line1, line2;
         final LinearProgressIndicator progress;
 
-        VH(@NonNull View v) {
-            super(v);
-            category = v.findViewById(R.id.budgetCategory);
-            percent = v.findViewById(R.id.budgetPercent);
-            progress = v.findViewById(R.id.budgetProgress);
-            line1 = v.findViewById(R.id.budgetLine1);
-            line2 = v.findViewById(R.id.budgetLine2);
+        VH(@NonNull ItemBudgetBinding b) {
+            super(b.getRoot());
+            category = b.budgetCategory;
+            percent = b.budgetPercent;
+            progress = b.budgetProgress;
+            line1 = b.budgetLine1;
+            line2 = b.budgetLine2;
         }
     }
 }

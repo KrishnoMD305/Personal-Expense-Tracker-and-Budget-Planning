@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-
+    <!-- Default theme (used by the manifest and as the starting window). The four user-selectable themes below
+         are applied in code by ThemeManager before each screen is created, and the choice is persisted. -->
     <style name="Theme.ExpenseTracker" parent="Theme.ExpenseTracker.White" />
 
     <style name="Theme.ExpenseTracker.White" parent="Theme.MaterialComponents.Light.DarkActionBar">
@@ -155,7 +156,7 @@
         <item name="etChartGrid">@color/theme_dark_chart_grid</item>
     </style>
 
-
+    <!-- Stage 5: welcome screen. Full-bleed, no action bar. -->
     <style name="Theme.ExpenseTracker.Splash" parent="Theme.ExpenseTracker.White">
         <item name="windowActionBar">false</item>
         <item name="windowNoTitle">true</item>

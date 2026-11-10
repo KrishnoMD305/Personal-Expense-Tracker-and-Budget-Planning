@@ -3,6 +3,7 @@ package com.example.expensetracker;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+
 import org.junit.Test;
 
 public class BudgetCalculatorTest {
@@ -18,6 +19,7 @@ public class BudgetCalculatorTest {
         assertFalse(s.isOverspent());
         assertEquals(bdt(50), s.spentPaisa);
     }
+
     @Test
     public void belowEightyPercentIsNormal() {
         BudgetStatus s = BudgetCalculator.status(bdt(1000), bdt(799));
@@ -26,12 +28,15 @@ public class BudgetCalculatorTest {
         assertEquals("79.9", s.percentText);
         assertEquals(79, s.progress);
     }
+
     @Test
     public void justBelowEightyPercentDoesNotWarn() {
+        // 79.99% must not be rounded up into a warning
         BudgetStatus s = BudgetCalculator.status(10_000, 7_999);
         assertEquals(BudgetStatus.Level.NORMAL, s.level);
         assertEquals("79.9", s.percentText);
     }
+
     @Test
     public void exactlyEightyPercentWarns() {
         BudgetStatus s = BudgetCalculator.status(bdt(1000), bdt(800));
@@ -40,6 +45,7 @@ public class BudgetCalculatorTest {
         assertEquals(bdt(200), s.remainingPaisa);
         assertFalse(s.isOverspent());
     }
+
     @Test
     public void justBelowHundredIsStillWarning() {
         BudgetStatus s = BudgetCalculator.status(10_000, 9_999);
@@ -47,6 +53,7 @@ public class BudgetCalculatorTest {
         assertEquals("99.9", s.percentText);
         assertEquals(99, s.progress);
     }
+
     @Test
     public void exactlyHundredPercentIsExceededButNotOverspent() {
         BudgetStatus s = BudgetCalculator.status(bdt(1000), bdt(1000));
@@ -56,6 +63,7 @@ public class BudgetCalculatorTest {
         assertFalse(s.isOverspent());
         assertEquals(100, s.progress);
     }
+
     @Test
     public void overspendingReportsNegativeRemainingAndCapsProgress() {
         BudgetStatus s = BudgetCalculator.status(bdt(1000), bdt(1250));
@@ -65,12 +73,14 @@ public class BudgetCalculatorTest {
         assertEquals("125", s.percentText);
         assertEquals(100, s.progress);
     }
+
     @Test
     public void percentKeepsOneDecimal() {
-        BudgetStatus s = BudgetCalculator.status(bdt(300), bdt(100)); 
+        BudgetStatus s = BudgetCalculator.status(bdt(300), bdt(100)); // 33.333...
         assertEquals("33.3", s.percentText);
         assertEquals(33, s.progress);
     }
+
     @Test
     public void zeroSpentIsZeroPercent() {
         BudgetStatus s = BudgetCalculator.status(bdt(500), 0);
@@ -78,12 +88,16 @@ public class BudgetCalculatorTest {
         assertEquals("0", s.percentText);
         assertEquals(bdt(500), s.remainingPaisa);
     }
+
     @Test
     public void largestSupportedAmountsDoNotOverflow() {
         BudgetStatus s = BudgetCalculator.status(MoneyUtils.MAX_PAISA, MoneyUtils.MAX_PAISA * 3);
         assertEquals(BudgetStatus.Level.EXCEEDED, s.level);
         assertEquals("300", s.percentText);
     }
+
+    // ---- MonthOverview-based
+
     @Test
     public void overviewAggregatesAcrossCategories() {
         java.util.List<Budget> budgets = new java.util.ArrayList<>();
@@ -93,8 +107,8 @@ public class BudgetCalculatorTest {
         java.util.List<CategoryTotal> spent = new java.util.ArrayList<>();
         spent.add(total("Food", bdt(2_500)));
         spent.add(total("Transport", bdt(1_200)));
-        spent.add(total("Rent", bdt(4_000))); 
-        spent.add(total(null, bdt(10)));      
+        spent.add(total("Rent", bdt(4_000))); // no category budget
+        spent.add(total(null, bdt(10)));       // legacy row without category
 
         MonthOverview o = MonthOverview.build("2026-10", budgets, spent);
         assertEquals(bdt(10_000), o.overallBudget());
@@ -120,6 +134,7 @@ public class BudgetCalculatorTest {
 
     @Test
     public void editingOrDeletingATransactionChangesTheResult() {
+        // The app recomputes from raw rows; simulate before/after of an edit and a delete.
         java.util.List<Budget> budgets = java.util.Collections.singletonList(budget("2026-10", "Food", bdt(1_000)));
         MonthOverview before = MonthOverview.build("2026-10", budgets,
                 java.util.Collections.singletonList(total("Food", bdt(900))));
@@ -134,6 +149,7 @@ public class BudgetCalculatorTest {
         assertEquals(0, BudgetCalculator.forCategory(afterDelete, "Food").spentPaisa);
         assertEquals(bdt(1_000), BudgetCalculator.forCategory(afterDelete, "Food").remainingPaisa);
     }
+
     static Budget budget(String month, String category, long paisa) {
         Budget b = new Budget();
         b.monthKey = month;
@@ -141,6 +157,7 @@ public class BudgetCalculatorTest {
         b.amountPaisa = paisa;
         return b;
     }
+
     static CategoryTotal total(String category, long paisa) {
         CategoryTotal t = new CategoryTotal();
         t.category = category;

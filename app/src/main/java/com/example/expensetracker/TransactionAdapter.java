@@ -1,5 +1,6 @@
 package com.example.expensetracker;
 
+import com.example.expensetracker.databinding.ItemTransactionBinding;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -29,10 +30,13 @@ public class TransactionAdapter extends ListAdapter<Transaction, TransactionAdap
     private final OnItemClick clickListener;
     private final OnItemLongClick listener;
     private final SimpleDateFormat dateFormat = new SimpleDateFormat("dd MMM yyyy", Locale.getDefault());
+
+    /** Stage 1 constructor (long-press only), kept for compatibility. */
     public TransactionAdapter(OnItemLongClick listener) {
         this(null, listener);
     }
 
+    /** Stage 2: tap to edit, long-press for edit/delete options. */
     public TransactionAdapter(OnItemClick clickListener, OnItemLongClick listener) {
         super(new DiffUtil.ItemCallback<Transaction>() {
             @Override
@@ -54,8 +58,7 @@ public class TransactionAdapter extends ListAdapter<Transaction, TransactionAdap
     @NonNull
     @Override
     public VH onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_transaction, parent, false);
-        return new VH(v);
+        return new VH(ItemTransactionBinding.inflate(LayoutInflater.from(parent.getContext()), parent, false));
     }
 
     @Override
@@ -78,11 +81,11 @@ public class TransactionAdapter extends ListAdapter<Transaction, TransactionAdap
     static class VH extends RecyclerView.ViewHolder {
         final TextView category, details, amount;
 
-        VH(@NonNull View v) {
-            super(v);
-            category = v.findViewById(R.id.itemCategory);
-            details = v.findViewById(R.id.itemDetails);
-            amount = v.findViewById(R.id.itemAmount);
+        VH(@NonNull ItemTransactionBinding b) {
+            super(b.getRoot());
+            category = b.itemCategory;
+            details = b.itemDetails;
+            amount = b.itemAmount;
         }
     }
 }

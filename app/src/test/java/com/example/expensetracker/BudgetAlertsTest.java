@@ -2,7 +2,9 @@ package com.example.expensetracker;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+
 import org.junit.Test;
+
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -26,11 +28,13 @@ public class BudgetAlertsTest {
         assertTrue(BudgetAlerts.forMonth(o, CATS).isEmpty());
         assertTrue(BudgetAlerts.forExpense(o, "Food").isEmpty());
     }
+
     @Test
     public void noAlertsWhenNoBudgetsAreSet() {
         MonthOverview o = overview(0, 0, 999_999, 999_999);
         assertTrue(BudgetAlerts.forMonth(o, CATS).isEmpty());
     }
+
     @Test
     public void warningAtEightyPercent() {
         MonthOverview o = overview(0, 10_000, 8_000, 0);
@@ -40,6 +44,7 @@ public class BudgetAlertsTest {
         assertTrue(a.get(0).message, a.get(0).message.contains("80% used"));
         assertTrue(a.get(0).message.contains(MoneyUtils.format(2_000)));
     }
+
     @Test
     public void limitReachedAtHundredPercent() {
         MonthOverview o = overview(0, 10_000, 10_000, 0);
@@ -47,6 +52,7 @@ public class BudgetAlertsTest {
         assertEquals(BudgetStatus.Level.EXCEEDED, a.level);
         assertTrue(a.message, a.message.contains("100% of budget used"));
     }
+
     @Test
     public void overspendingAlertNamesTheAmount() {
         MonthOverview o = overview(0, 10_000, 12_500, 0);
@@ -54,8 +60,10 @@ public class BudgetAlertsTest {
         assertEquals(BudgetStatus.Level.EXCEEDED, a.level);
         assertTrue(a.message, a.message.contains("OVERSPENT by " + MoneyUtils.format(2_500)));
     }
+
     @Test
     public void overallAndCategoryAlertsAreBothReported() {
+        // overall 20,000 with 18,000 spent in total (90%); Food 10,000 with 11,000 spent
         MonthOverview o = overview(20_000, 10_000, 11_000, 7_000);
         List<BudgetAlerts.Alert> a = BudgetAlerts.forExpense(o, "Food");
         assertEquals(2, a.size());
@@ -64,9 +72,10 @@ public class BudgetAlertsTest {
         assertEquals(BudgetStatus.Level.WARNING, a.get(1).level);
         assertEquals(2, BudgetAlerts.forMonth(o, CATS).size());
     }
+
     @Test
     public void expenseInUnbudgetedCategoryStillTriggersOverallAlert() {
-        MonthOverview o = overview(10_000, 0, 0, 9_000); 
+        MonthOverview o = overview(10_000, 0, 0, 9_000); // Rent has no budget
         List<BudgetAlerts.Alert> a = BudgetAlerts.forExpense(o, "Rent");
         assertEquals(1, a.size());
         assertEquals(BudgetAlerts.OVERALL_LABEL, a.get(0).scope);

@@ -1,0 +1,35 @@
+{
+  "rules": {
+    ".read": false,
+    ".write": false,
+    "users": {
+      "$uid": {
+        ".read": "auth != null && auth.uid === $uid",
+        ".write": "auth != null && auth.uid === $uid",
+        "profile": {
+          ".validate": "newData.hasChildren(['lastSeen'])",
+          "email": { ".validate": "newData.isString() && newData.val().length <= 320" },
+          "device": { ".validate": "newData.isString() && newData.val().length <= 100" },
+          "appVersion": { ".validate": "newData.isString() && newData.val().length <= 40" },
+          "lastBackup": { ".validate": "newData.isNumber()" },
+          "lastSeen": { ".validate": "newData.isNumber()" },
+          "$other": { ".validate": false }
+        },
+        "syncLog": {
+          ".indexOn": ["time"],
+          "$entry": {
+            ".validate": "newData.hasChildren(['time', 'action', 'result'])",
+            "time": { ".validate": "newData.isNumber()" },
+            "action": { ".validate": "newData.isString() && newData.val().length <= 30" },
+            "result": { ".validate": "newData.isString() && newData.val().length <= 30" },
+            "rows": { ".validate": "newData.isNumber()" },
+            "device": { ".validate": "newData.isString() && newData.val().length <= 100" },
+            "message": { ".validate": "newData.isString() && newData.val().length <= 300" },
+            "$other": { ".validate": false }
+          }
+        },
+        "$other": { ".validate": false }
+      }
+    }
+  }
+}

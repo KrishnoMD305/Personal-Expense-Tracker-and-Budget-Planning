@@ -136,6 +136,8 @@ final class BackupJson {
             o.put("paymentTransactionId", b.paymentTransactionId);
             o.put("lastNotifiedDay", b.lastNotifiedDay);
             o.put("createdAt", b.createdAt);
+            o.put("receiptFile", b.receiptFile);           // Stage 7 (optional when reading older files)
+            o.put("receiptCloudPath", b.receiptCloudPath); // Stage 7
             bi.put(o);
         }
         data.put("bills", bi);
@@ -321,6 +323,14 @@ final class BackupJson {
             b.paymentTransactionId = o.getLong("paymentTransactionId");
             b.lastNotifiedDay = o.getLong("lastNotifiedDay");
             b.createdAt = o.getLong("createdAt");
+            // Stage 7: receipt columns are optional (files written before Stage 7 do not have them) but, when
+            // present, must be well-formed names - they are later turned into file and cloud paths.
+            b.receiptFile = o.isNull("receiptFile") ? "" : o.optString("receiptFile", "");
+            b.receiptCloudPath = o.isNull("receiptCloudPath") ? "" : o.optString("receiptCloudPath", "");
+            if (!ReceiptNames.isValidOrEmpty(b.receiptFile) || !ReceiptNames.isValidCloudPathOrEmpty(b.receiptCloudPath)) {
+                throw bad("bills", i, "invalid receipt reference");
+            }
+            if (b.receiptFile.isEmpty()) b.receiptCloudPath = "";
             d.bills.add(b);
         }
 

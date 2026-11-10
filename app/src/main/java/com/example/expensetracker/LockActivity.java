@@ -1,5 +1,6 @@
 package com.example.expensetracker;
 
+import com.example.expensetracker.databinding.ActivityLockBinding;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -28,6 +29,7 @@ import java.util.concurrent.Executor;
  * Wrong PINs are counted persistently and cause a growing lock-out ({@link PinPolicy}).
  */
 public class LockActivity extends AppCompatActivity {
+    private ActivityLockBinding binding;
     private TextInputEditText pinInput;
     private TextView message;
     private Button unlockButton, biometricButton;
@@ -46,17 +48,18 @@ public class LockActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         ThemeManager.apply(this);
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_lock);
+        binding = ActivityLockBinding.inflate(getLayoutInflater());
+        setContentView(binding.getRoot());
         if (getSupportActionBar() != null) getSupportActionBar().hide();
         settings = AppSettings.get(this);
         if (settings.hideContent()) {
             getWindow().addFlags(WindowManager.LayoutParams.FLAG_SECURE);
         }
 
-        pinInput = findViewById(R.id.pinInput);
-        message = findViewById(R.id.lockMessage);
-        unlockButton = findViewById(R.id.unlockButton);
-        biometricButton = findViewById(R.id.biometricButton);
+        pinInput = binding.pinInput;
+        message = binding.lockMessage;
+        unlockButton = binding.unlockButton;
+        biometricButton = binding.biometricButton;
 
         unlockButton.setOnClickListener(v -> submit());
         biometricButton.setOnClickListener(v -> showBiometricPrompt());

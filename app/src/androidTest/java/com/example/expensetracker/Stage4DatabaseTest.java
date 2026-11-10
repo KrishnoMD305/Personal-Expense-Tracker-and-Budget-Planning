@@ -3,15 +3,23 @@ package com.example.expensetracker;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+
 import android.content.Context;
+
 import androidx.room.Room;
 import androidx.test.platform.app.InstrumentationRegistry;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+
 import java.util.Calendar;
 import java.util.List;
 
+/**
+ * Stage 4: exercises the real Room DAOs and {@link RecurringRepository#processDue} on an in-memory
+ * database. Run with: ./gradlew connectedDebugAndroidTest (needs a device or emulator).
+ */
 public class Stage4DatabaseTest {
     private AppDatabase db;
 
@@ -50,6 +58,8 @@ public class Stage4DatabaseTest {
     private int transactionCount() {
         return db.transactionDao().getBetween(0, Long.MAX_VALUE).size();
     }
+
+    // ------------------------------------------------------------------ recurring
 
     @Test
     public void processDue_createsMissedOccurrencesOnce() {
@@ -91,6 +101,8 @@ public class Stage4DatabaseTest {
         assertEquals(0, db.recurringPostingDao().count(id, day(2026, 10, 16)));
     }
 
+    // ---------------------------------------------------------------------- goals
+
     @Test
     public void goalSavedTotalAndCascadeDelete() throws Exception {
         SavingsGoal g = new SavingsGoal();
@@ -120,6 +132,12 @@ public class Stage4DatabaseTest {
         db.goalContributionDao().insert(c);
     }
 
+    // ----------------------------------------------------------------------- bills
+
+    /**
+     * BillRepository works on the app's real database singleton (not the in-memory one above), so this test
+     * counts transactions as a delta and cleans up after itself.
+     */
     @Test
     public void markPaidCreatesOneExpenseAndMarkUnpaidRemovesIt() throws Exception {
         Context ctx = InstrumentationRegistry.getInstrumentation().getTargetContext();
@@ -153,6 +171,7 @@ public class Stage4DatabaseTest {
         }
     }
 
+    /** Repository writes run on a single-thread executor: wait until everything queued so far has finished. */
     private static void waitForWrites() throws Exception {
         AppDatabase.WRITE_EXECUTOR.submit(() -> { }).get();
     }

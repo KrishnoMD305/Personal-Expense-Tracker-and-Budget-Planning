@@ -4,9 +4,11 @@ import static com.example.expensetracker.TestDays.d;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+
 import java.util.Calendar;
 import java.util.List;
 import java.util.TimeZone;
@@ -100,7 +102,7 @@ public class RecurrenceCalculatorTest {
     public void longRunningRuleFindsTheRightDayQuickly() {
         List<Long> o = RecurrenceCalculator.occurrencesBetween(d(2016, 3, 31), 0,
                 RecurrenceCalculator.MONTHLY, d(2026, 10, 17), d(2026, 11, 30), 10);
-        assertEquals(2, o.size());
+        assertEquals(2, o.size()); // Oct 31 and Nov 30 (clamped from the 31st)
         assertEquals(d(2026, 10, 31), (long) o.get(0));
         assertEquals(d(2026, 11, 30), (long) o.get(1));
 
@@ -141,11 +143,13 @@ public class RecurrenceCalculatorTest {
             RecurrenceCalculator.occurrence(d(2026, 1, 1), "YEARLY", 0);
             fail();
         } catch (IllegalArgumentException expected) {
+            // ok
         }
         try {
             RecurrenceCalculator.occurrence(d(2026, 1, 1), RecurrenceCalculator.DAILY, -1);
             fail();
         } catch (IllegalArgumentException expected) {
+            // ok
         }
     }
 }

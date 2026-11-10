@@ -1,5 +1,7 @@
 package com.example.expensetracker;
 
+import com.example.expensetracker.databinding.ActivityCloudAccountBinding;
+import com.example.expensetracker.databinding.DialogProgressBinding;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -29,6 +31,7 @@ import java.util.Locale;
  * cloud copy. Restoring reuses the Stage 5 machinery (validation, safety copy, all-or-nothing replace).
  */
 public class CloudAccountActivity extends BaseActivity {
+    private ActivityCloudAccountBinding binding;
     private final Handler main = new Handler(Looper.getMainLooper());
     private AppSettings settings;
 
@@ -38,42 +41,47 @@ public class CloudAccountActivity extends BaseActivity {
     private TextView signedInEmail, cloudStatus, cloudThisDevice;
     private SwitchMaterial switchAuto;
     private AlertDialog progress;
-    private boolean binding;
+    private DialogProgressBinding progressViews; // Stage 7: message + bar of the open progress dialog
+    private long dismissedJob = -1;              // a job whose dialog the user closed (it keeps running)
+    private long shownJob = -1;                  // a finished job whose result was already shown
+    private boolean bindingNow;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_cloud_account);
+        binding = ActivityCloudAccountBinding.inflate(getLayoutInflater());
+        setContentView(binding.getRoot());
         if (getSupportActionBar() != null) getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         settings = AppSettings.get(this);
 
-        notConfiguredCard = findViewById(R.id.notConfiguredCard);
-        accountCard = findViewById(R.id.accountCard);
-        signedOutGroup = findViewById(R.id.signedOutGroup);
-        signedInGroup = findViewById(R.id.signedInGroup);
-        backupCard = findViewById(R.id.backupCard);
-        emailLayout = findViewById(R.id.emailLayout);
-        passwordLayout = findViewById(R.id.passwordLayout);
-        emailInput = findViewById(R.id.emailInput);
-        passwordInput = findViewById(R.id.passwordInput);
-        signedInEmail = findViewById(R.id.signedInEmail);
-        cloudStatus = findViewById(R.id.cloudStatusText);
-        cloudThisDevice = findViewById(R.id.cloudThisDeviceText);
-        switchAuto = findViewById(R.id.switchCloudAuto);
+        notConfiguredCard = binding.notConfiguredCard;
+        accountCard = binding.accountCard;
+        signedOutGroup = binding.signedOutGroup;
+        signedInGroup = binding.signedInGroup;
+        backupCard = binding.backupCard;
+        emailLayout = binding.emailLayout;
+        passwordLayout = binding.passwordLayout;
+        emailInput = binding.emailInput;
+        passwordInput = binding.passwordInput;
+        signedInEmail = binding.signedInEmail;
+        cloudStatus = binding.cloudStatusText;
+        cloudThisDevice = binding.cloudThisDeviceText;
+        switchAuto = binding.switchCloudAuto;
 
-        findViewById(R.id.signInButton).setOnClickListener(v -> signIn());
-        findViewById(R.id.createAccountButton).setOnClickListener(v -> createAccount());
-        findViewById(R.id.forgotPasswordButton).setOnClickListener(v -> forgotPassword());
-        findViewById(R.id.signOutButton).setOnClickListener(v -> confirmSignOut());
-        findViewById(R.id.backupNowButton).setOnClickListener(v -> runUpload(false));
-        findViewById(R.id.cloudRestoreButton).setOnClickListener(v -> startRestore());
-        findViewById(R.id.deleteCloudButton).setOnClickListener(v -> confirmDelete());
+        binding.signInButton.setOnClickListener(v -> signIn());
+        binding.createAccountButton.setOnClickListener(v -> createAccount());
+        binding.forgotPasswordButton.setOnClickListener(v -> forgotPassword());
+        binding.signOutButton.setOnClickListener(v -> confirmSignOut());
+        binding.backupNowButton.setOnClickListener(v -> runUpload(false));
+        binding.cloudRestoreButton.setOnClickListener(v -> startRestore());
+        binding.deleteCloudButton.setOnClickListener(v -> confirmDelete());
         switchAuto.setOnCheckedChangeListener((b, checked) -> {
-            if (binding) return;
+            if (bindingNow) return;
             settings.setCloudAutoBackup(checked);
             CloudSyncWorker.apply(this);
             if (checked) Toast.makeText(this, R.string.cloud_auto_on_toast, Toast.LENGTH_SHORT).show();
         });
+        BackupJob.status().observe(this, this::onJobStatus); // Stage 7: follow the foreground service
     }
 
     @Override
@@ -112,10 +120,35 @@ public class CloudAccountActivity extends BaseActivity {
         if (!signedIn) return;
 
         signedInEmail.setText(getString(R.string.cloud_signed_in_as, email));
-        binding = true;
+        bindingNow = true;
         switchAuto.setChecked(settings.cloudAutoBackup());
-        binding = false;
+        bindingNow = false;
         refreshStatus();
+        refreshActivityLog();
+    }
+
+    /** Stage 7: the newest lines of the Realtime Database sync log. */
+    private void refreshActivityLog() {
+        binding.activityCard.setVisibility(View.VISIBLE);
+        binding.cloudActivityText.setText(R.string.cloud_activity_loading);
+        CloudLog.loadRecent(this, 8, (entries, error) -> {
+            if (!alive()) return;
+            if (error != null) {
+                binding.cloudActivityText.setText(error);
+            } else if (entries.isEmpty()) {
+                binding.cloudActivityText.setText(R.string.cloud_activity_none);
+            } else {
+                StringBuilder sb = new StringBuilder();
+                for (CloudLog.Entry e : entries) {
+                    if (sb.length() > 0) sb.append('\n');
+                    sb.append(e.time > 0 ? format(e.time) : "?").append("  \u2022  ").append(e.action)
+                            .append(": ").append(e.result);
+                    if (e.rows > 0) sb.append(" (").append(e.rows).append(')');
+                    if (!e.message.isEmpty()) sb.append("\n    ").append(e.message);
+                }
+                binding.cloudActivityText.setText(sb.toString());
+            }
+        });
     }
 
     /** Asks the cloud what it holds (off the main thread) and shows it. */
@@ -221,6 +254,8 @@ public class CloudAccountActivity extends BaseActivity {
 
     private void onSignedIn() {
         passwordInput.setText("");
+        CloudLog.touchProfile(this);                                  // Stage 7: Realtime Database profile node
+        CloudLog.log(this, CloudLog.ACTION_SIGN_IN, CloudLog.RESULT_OK, 0, "");
         Toast.makeText(this, R.string.cloud_welcome_toast, Toast.LENGTH_SHORT).show();
         bind();
         offerRestoreIfDeviceIsEmpty();
@@ -258,49 +293,74 @@ public class CloudAccountActivity extends BaseActivity {
                         .setTitle(R.string.cloud_found_title)
                         .setMessage(R.string.cloud_found_message)
                         .setNegativeButton(android.R.string.cancel, null)
-                        .setPositiveButton(R.string.restore, (d, w) -> startRestore())
+                        .setPositiveButton(R.string.restore, (d, w) -> beginRestore())
                         .show();
             });
         });
     }
 
-    // ------------------------------------------------------------------ backup
+    // ------------------------------------------------------------------ backup / restore (foreground service)
 
+    /** Starts the foreground service; progress and the result come back through {@link #onJobStatus}. */
     private void runUpload(final boolean force) {
-        showProgress(R.string.cloud_working_upload);
-        final android.content.Context app = getApplicationContext();
-        CloudSync.IO.execute(() -> {
-            CloudSync.UploadResult result = null;
-            String error = null;
-            try {
-                result = CloudSync.upload(app, force);
-            } catch (CloudException e) {
-                error = e.getMessage();
-            } catch (RuntimeException e) {
-                error = String.valueOf(e.getMessage());
-            }
-            final CloudSync.UploadResult res = result;
-            final String err = error;
-            main.post(() -> {
-                hideProgress();
-                if (!alive()) return;
-                if (err != null) {
-                    showMessage(R.string.cloud_backup_failed_title, getString(R.string.cloud_backup_failed_message, err));
-                    return;
+        if (!BackupService.start(this, false, force)) {
+            Toast.makeText(this, R.string.job_already_running, Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private void startRestore() {
+        new AlertDialog.Builder(this)
+                .setTitle(R.string.cloud_restore_confirm_title)
+                .setMessage(R.string.cloud_restore_confirm_generic)
+                .setNegativeButton(android.R.string.cancel, null)
+                .setPositiveButton(R.string.restore, (d, w) -> beginRestore())
+                .show();
+    }
+
+    private void beginRestore() {
+        if (!BackupService.start(this, true, false)) {
+            Toast.makeText(this, R.string.job_already_running, Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    /** Observes {@link BackupJob}: progress dialog while running, then one result dialog. */
+    private void onJobStatus(BackupJob.Status st) {
+        if (st == null) {
+            hideProgress();
+            return;
+        }
+        if (st.isRunning()) {
+            if (st.id == dismissedJob || !alive()) return;
+            showJobProgress(st);
+            return;
+        }
+        hideProgress();
+        if (st.id == shownJob || !alive()) return;
+        shownJob = st.id;
+        BackupJob.acknowledge(st.id);
+        final boolean restore = st.kind == BackupJob.Kind.RESTORE;
+        switch (st.phase) {
+            case DONE:
+                if (restore) {
+                    new AlertDialog.Builder(this)
+                            .setTitle(R.string.restore_done_title)
+                            .setMessage(st.message + "\n\n" + getString(R.string.restore_done_message))
+                            .setPositiveButton(R.string.ok, (d, w) -> recreate())
+                            .setOnCancelListener(d -> recreate())
+                            .show();
+                } else {
+                    showMessage(R.string.cloud_backup_done_title, st.message);
                 }
-                switch (res.outcome) {
-                    case UPLOADED:
-                        showMessage(R.string.cloud_backup_done_title, getString(R.string.cloud_backup_done_message, res.rows));
-                        break;
-                    case UNCHANGED:
-                        showMessage(R.string.cloud_backup_done_title, getString(R.string.cloud_backup_unchanged_message));
-                        break;
-                    default:
-                        confirmReplace(res.remote);
-                }
-                refreshStatus();
-            });
-        });
+                break;
+            case CONFLICT:
+                confirmReplace(st.remote);
+                break;
+            default:
+                showMessage(restore ? R.string.cloud_restore_failed_title : R.string.cloud_backup_failed_title,
+                        st.message);
+        }
+        refreshStatus();
+        refreshActivityLog();
     }
 
     private void confirmReplace(CloudSync.RemoteInfo remote) {
@@ -312,82 +372,6 @@ public class CloudAccountActivity extends BaseActivity {
                 .setNeutralButton(R.string.cloud_conflict_restore, (d, w) -> startRestore())
                 .setPositiveButton(R.string.cloud_conflict_replace, (d, w) -> runUpload(true))
                 .show();
-    }
-
-    // ------------------------------------------------------------------ restore
-
-    private void startRestore() {
-        showProgress(R.string.cloud_working_download);
-        final android.content.Context app = getApplicationContext();
-        CloudSync.IO.execute(() -> {
-            BackupData data = null;
-            String error = null;
-            try {
-                data = CloudSync.download(app);
-            } catch (CloudException | BackupException e) {
-                error = e.getMessage();
-            } catch (RuntimeException e) {
-                error = String.valueOf(e.getMessage());
-            }
-            final BackupData parsed = data;
-            final String err = error;
-            main.post(() -> {
-                hideProgress();
-                if (!alive()) return;
-                if (err != null) showMessage(R.string.cloud_restore_failed_title, err);
-                else confirmRestore(parsed);
-            });
-        });
-    }
-
-    private void confirmRestore(final BackupData data) {
-        String message = getString(R.string.cloud_restore_confirm_message, data.createdAtMillis > 0
-                        ? format(data.createdAtMillis) : getString(R.string.unknown),
-                data.transactions.size(), data.budgets.size(), data.goals.size(), data.contributions.size(),
-                data.rules.size(), data.bills.size());
-        new AlertDialog.Builder(this)
-                .setTitle(R.string.cloud_restore_confirm_title)
-                .setMessage(message)
-                .setNegativeButton(android.R.string.cancel, null)
-                .setPositiveButton(R.string.restore, (d, w) -> runRestore(data))
-                .show();
-    }
-
-    private void runRestore(final BackupData data) {
-        showProgress(R.string.working_restore);
-        final android.content.Context app = getApplicationContext();
-        final String uid = CloudConfig.currentUid(this);
-        CloudSync.IO.execute(() -> {
-            String error = null;
-            try {
-                BackupRepository.restore(app, data); // safety copy first, then one all-or-nothing transaction
-                if (uid != null) {
-                    settings.setCloudBase(uid, data.createdAtMillis); // this device now matches the cloud copy
-                    settings.setCloudFingerprint(uid, "");
-                    settings.setLastCloudBackupMillis(data.createdAtMillis);
-                }
-            } catch (Exception e) {
-                error = e.getMessage() == null ? e.getClass().getSimpleName() : e.getMessage();
-            }
-            final String err = error;
-            main.post(() -> {
-                hideProgress();
-                if (err != null) {
-                    if (alive()) {
-                        showMessage(R.string.restore_failed_title, getString(R.string.restore_failed_message, err));
-                    }
-                    return;
-                }
-                BackgroundWork.runNow(app); // catch up recurring items / reminders for the restored rules
-                if (!alive()) return;
-                new AlertDialog.Builder(this)
-                        .setTitle(R.string.restore_done_title)
-                        .setMessage(R.string.restore_done_message)
-                        .setPositiveButton(R.string.ok, (d, w) -> recreate())
-                        .setOnCancelListener(d -> recreate())
-                        .show();
-            });
-        });
     }
 
     // ------------------------------------------------------------------ delete cloud data
@@ -453,10 +437,37 @@ public class CloudAccountActivity extends BaseActivity {
 
     private void showProgress(int messageRes) {
         hideProgress();
-        View v = LayoutInflater.from(this).inflate(R.layout.dialog_progress, null);
-        ((TextView) v.findViewById(R.id.progressMessage)).setText(messageRes);
-        progress = new AlertDialog.Builder(this).setView(v).setCancelable(false).create();
+        DialogProgressBinding views = DialogProgressBinding.inflate(getLayoutInflater());
+        views.progressMessage.setText(messageRes);
+        progressViews = views;
+        progress = new AlertDialog.Builder(this).setView(views.getRoot()).setCancelable(false).create();
         progress.show();
+    }
+
+    /** The progress dialog of a running foreground job: message, bar and "n of m". The user may close it. */
+    private void showJobProgress(BackupJob.Status st) {
+        if (progress == null || progressViews == null) {
+            hideProgress();
+            DialogProgressBinding views = DialogProgressBinding.inflate(getLayoutInflater());
+            progressViews = views;
+            progress = new AlertDialog.Builder(this).setView(views.getRoot()).setCancelable(true)
+                    .setOnCancelListener(d -> dismissedJob = st.id)
+                    .setPositiveButton(R.string.job_run_in_background, (d, w) -> dismissedJob = st.id)
+                    .create();
+            progress.show();
+        }
+        progressViews.progressMessage.setText(st.kind == BackupJob.Kind.RESTORE
+                ? R.string.working_restore : R.string.cloud_working_upload);
+        progressViews.progressDetail.setVisibility(View.VISIBLE);
+        progressViews.progressDetail.setText(BackupJob.stageText(this, st));
+        int percent = st.percent();
+        progressViews.progressBar.setVisibility(View.VISIBLE);
+        if (percent < 0) {
+            progressViews.progressBar.setIndeterminate(true);
+        } else {
+            progressViews.progressBar.setIndeterminate(false);
+            progressViews.progressBar.setProgressCompat(percent, true);
+        }
     }
 
     private void hideProgress() {
@@ -467,6 +478,7 @@ public class CloudAccountActivity extends BaseActivity {
                 // the window is already gone
             }
             progress = null;
+            progressViews = null;
         }
     }
 }

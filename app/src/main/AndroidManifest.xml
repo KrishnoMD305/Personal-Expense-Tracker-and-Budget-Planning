@@ -8,6 +8,16 @@
     <!-- Stage 4: bill reminders. Runtime permission on Android 13+ (requested from the Bills screen). -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
+    <!-- Stage 7: "Back up now" / "Restore" run as a foreground service of type dataSync (progress notification). -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
+
+    <!-- Stage 7: the camera is optional (receipts can also come from the photo picker). No CAMERA permission is
+         needed: the photo is taken by the camera app and handed back through our FileProvider. -->
+    <uses-feature
+        android:name="android.hardware.camera"
+        android:required="false" />
+
     <application
         android:name=".ExpenseTrackerApp"
         android:allowBackup="true"
@@ -103,5 +113,21 @@
             android:exported="false"
             android:label="@string/bills"
             android:parentActivityName=".MainActivity" />
+
+        <!-- Stage 7 -->
+        <service
+            android:name=".BackupService"
+            android:exported="false"
+            android:foregroundServiceType="dataSync" />
+
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.fileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths" />
+        </provider>
     </application>
 </manifest>

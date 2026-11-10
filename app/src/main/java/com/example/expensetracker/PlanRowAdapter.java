@@ -1,5 +1,7 @@
 package com.example.expensetracker;
 
+import com.example.expensetracker.databinding.ItemPlanRowBinding;
+import com.example.expensetracker.databinding.ItemPlanHeaderBinding;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -46,9 +48,9 @@ public class PlanRowAdapter extends ListAdapter<PlanRow, RecyclerView.ViewHolder
     public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         LayoutInflater in = LayoutInflater.from(parent.getContext());
         if (viewType == PlanRow.HEADER) {
-            return new HeaderVH(in.inflate(R.layout.item_plan_header, parent, false));
+            return new HeaderVH(ItemPlanHeaderBinding.inflate(in, parent, false));
         }
-        return new ItemVH(in.inflate(R.layout.item_plan_row, parent, false));
+        return new ItemVH(ItemPlanRowBinding.inflate(in, parent, false));
     }
 
     @Override
@@ -93,9 +95,9 @@ public class PlanRowAdapter extends ListAdapter<PlanRow, RecyclerView.ViewHolder
     static class HeaderVH extends RecyclerView.ViewHolder {
         final TextView title;
 
-        HeaderVH(@NonNull View v) {
-            super(v);
-            title = v.findViewById(R.id.planHeaderTitle);
+        HeaderVH(@NonNull ItemPlanHeaderBinding b) {
+            super(b.getRoot());
+            title = b.planHeaderTitle;
         }
     }
 
@@ -103,13 +105,13 @@ public class PlanRowAdapter extends ListAdapter<PlanRow, RecyclerView.ViewHolder
         final TextView title, trailing, line1, line2;
         final LinearProgressIndicator progress;
 
-        ItemVH(@NonNull View v) {
-            super(v);
-            title = v.findViewById(R.id.planTitle);
-            trailing = v.findViewById(R.id.planTrailing);
-            progress = v.findViewById(R.id.planProgress);
-            line1 = v.findViewById(R.id.planLine1);
-            line2 = v.findViewById(R.id.planLine2);
+        ItemVH(@NonNull ItemPlanRowBinding b) {
+            super(b.getRoot());
+            title = b.planTitle;
+            trailing = b.planTrailing;
+            progress = b.planProgress;
+            line1 = b.planLine1;
+            line2 = b.planLine2;
         }
     }
 }

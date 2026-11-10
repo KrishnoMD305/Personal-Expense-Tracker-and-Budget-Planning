@@ -1,6 +1,7 @@
 package com.example.expensetracker;
 
 import androidx.annotation.NonNull;
+import androidx.room.ColumnInfo;
 import androidx.room.Entity;
 import androidx.room.PrimaryKey;
 
@@ -25,4 +26,18 @@ public class Bill {
     /** Start of the last day a notification was shown for this bill (limits it to one per day). */
     public long lastNotifiedDay;
     public long createdAt;
+    /**
+     * Stage 7: file name (not a path) of the receipt photo stored in the app's private {@code files/receipts}
+     * folder; empty when no receipt is attached. See {@link ReceiptNames}.
+     */
+    @NonNull
+    @ColumnInfo(defaultValue = "''")
+    public String receiptFile = "";
+    /**
+     * Stage 7: Firebase Storage path the receipt was uploaded to ({@code users/{uid}/receipts/{file}});
+     * empty = not uploaded yet.
+     */
+    @NonNull
+    @ColumnInfo(defaultValue = "''")
+    public String receiptCloudPath = "";
 }

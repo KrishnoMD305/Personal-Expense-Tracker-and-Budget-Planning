@@ -1,5 +1,7 @@
 package com.example.expensetracker;
 
+import com.example.expensetracker.databinding.DialogRecurringBinding;
+import com.example.expensetracker.databinding.ActivityPlanListBinding;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
@@ -24,8 +26,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-/** Recurring income / expense rules(daily, weekly, monthly): list, add, edit, pause, delete. */
+/** Recurring income / expense rules (daily, weekly, monthly): list, add, edit, pause, delete. */
 public class RecurringActivity extends BaseActivity {
+    private ActivityPlanListBinding binding;
     private PlanRowAdapter adapter;
     private TextView emptyView;
     private List<RecurringRule> lastRules;
@@ -33,19 +36,20 @@ public class RecurringActivity extends BaseActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_plan_list);
+        binding = ActivityPlanListBinding.inflate(getLayoutInflater());
+        setContentView(binding.getRoot());
         setTitle(R.string.recurring);
         if (getSupportActionBar() != null) getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
-        emptyView = findViewById(R.id.planEmpty);
+        emptyView = binding.planEmpty;
         emptyView.setText(R.string.rec_empty);
-        ((TextView) findViewById(R.id.planIntro)).setText(R.string.rec_intro);
-        RecyclerView list = findViewById(R.id.planList);
+        binding.planIntro.setText(R.string.rec_intro);
+        RecyclerView list = binding.planList;
         adapter = new PlanRowAdapter(row -> showOptions((RecurringRule) row.tag));
         list.setLayoutManager(new LinearLayoutManager(this));
         list.setAdapter(adapter);
 
-        FloatingActionButton fab = findViewById(R.id.planFab);
+        FloatingActionButton fab = binding.planFab;
         fab.setContentDescription(getString(R.string.rec_new));
         fab.setOnClickListener(v -> showEditor(null));
 
@@ -135,21 +139,21 @@ public class RecurringActivity extends BaseActivity {
     // ------------------------------------------------------------------ editor dialog
 
     private void showEditor(RecurringRule existing) {
-        View content = LayoutInflater.from(this).inflate(R.layout.dialog_recurring, null);
-        RadioGroup typeGroup = content.findViewById(R.id.recTypeGroup);
-        TextInputLayout amountLayout = content.findViewById(R.id.recAmountLayout);
-        TextInputEditText amountInput = content.findViewById(R.id.recAmountInput);
-        TextInputEditText noteInput = content.findViewById(R.id.recNoteInput);
-        Spinner categorySpinner = content.findViewById(R.id.recCategorySpinner);
-        Spinner frequencySpinner = content.findViewById(R.id.recFrequencySpinner);
-        TextView formError = content.findViewById(R.id.recFormError);
+        DialogRecurringBinding dialogBinding = DialogRecurringBinding.inflate(getLayoutInflater());
+        RadioGroup typeGroup = dialogBinding.recTypeGroup;
+        TextInputLayout amountLayout = dialogBinding.recAmountLayout;
+        TextInputEditText amountInput = dialogBinding.recAmountInput;
+        TextInputEditText noteInput = dialogBinding.recNoteInput;
+        Spinner categorySpinner = dialogBinding.recCategorySpinner;
+        Spinner frequencySpinner = dialogBinding.recFrequencySpinner;
+        TextView formError = dialogBinding.recFormError;
         final long today = PlanDates.today();
         final long originalStart = existing == null ? 0 : existing.startDateMillis;
-        DateField start = new DateField(this, content.findViewById(R.id.recStartButton),
+        DateField start = new DateField(this, dialogBinding.recStartButton,
                 existing == null ? today : existing.startDateMillis, R.string.rec_start, null);
-        DateField end = new DateField(this, content.findViewById(R.id.recEndButton),
+        DateField end = new DateField(this, dialogBinding.recEndButton,
                 existing == null ? 0 : existing.endDateMillis, R.string.rec_no_end,
-                content.findViewById(R.id.recEndClear));
+                dialogBinding.recEndClear);
 
         ArrayAdapter<CharSequence> freqAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item,
                 getResources().getTextArray(R.array.frequency_labels));
@@ -171,7 +175,7 @@ public class RecurringActivity extends BaseActivity {
 
         AlertDialog dialog = new AlertDialog.Builder(this)
                 .setTitle(existing == null ? R.string.rec_new : R.string.rec_edit)
-                .setView(content)
+                .setView(dialogBinding.getRoot())
                 .setNegativeButton(android.R.string.cancel, null)
                 .setPositiveButton(android.R.string.ok, null)
                 .create();

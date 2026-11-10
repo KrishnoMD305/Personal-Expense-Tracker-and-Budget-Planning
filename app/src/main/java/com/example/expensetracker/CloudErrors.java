@@ -8,6 +8,7 @@ import com.google.firebase.auth.FirebaseAuthInvalidUserException;
 import com.google.firebase.auth.FirebaseAuthUserCollisionException;
 import com.google.firebase.auth.FirebaseAuthWeakPasswordException;
 import com.google.firebase.firestore.FirebaseFirestoreException;
+import com.google.firebase.storage.StorageException;
 
 /** Stage 6: turns Firebase exceptions into messages a person can act on. */
 final class CloudErrors {
@@ -62,6 +63,27 @@ final class CloudErrors {
                     return "Cloud error (" + ((FirebaseFirestoreException) t).getCode() + "): " + t.getMessage();
             }
         }
+        if (t instanceof StorageException) { // Stage 7: Cloud Storage (receipt photos)
+            switch (((StorageException) t).getErrorCode()) {
+                case StorageException.ERROR_NOT_AUTHENTICATED:
+                    return "Your sign-in has expired. Please sign out and sign in again.";
+                case StorageException.ERROR_NOT_AUTHORIZED:
+                    return "Cloud Storage refused the upload. Publish the rules from storage.rules in the Firebase "
+                            + "console (Storage > Rules) - see FIREBASE_SETUP_GUIDE.md.";
+                case StorageException.ERROR_BUCKET_NOT_FOUND:
+                case StorageException.ERROR_PROJECT_NOT_FOUND:
+                    return "Cloud Storage is not set up for this Firebase project. Open Storage in the Firebase "
+                            + "console and click Get started (it needs the Blaze plan) - see FIREBASE_SETUP_GUIDE.md.";
+                case StorageException.ERROR_QUOTA_EXCEEDED:
+                    return "The Cloud Storage quota has been used up.";
+                case StorageException.ERROR_RETRY_LIMIT_EXCEEDED:
+                    return "Could not reach the cloud. Check your internet connection and try again.";
+                case StorageException.ERROR_OBJECT_NOT_FOUND:
+                    return "Cloud Storage could not find its storage bucket (it is probably not created or not enabled for this Firebase project). The receipt is saved in Firestore instead.";
+                default:
+                    return "Cloud Storage error: " + t.getMessage();
+            }
+        }
         String m = t.getMessage();
         return m == null || m.isEmpty() ? t.getClass().getSimpleName() : m;
     }
@@ -69,6 +91,9 @@ final class CloudErrors {
     /** True when the same operation may succeed later without the user doing anything. */
     static boolean isRetryable(Throwable t) {
         if (t instanceof FirebaseNetworkException) return true;
+        if (t instanceof StorageException) {
+            return ((StorageException) t).getErrorCode() == StorageException.ERROR_RETRY_LIMIT_EXCEEDED;
+        }
         if (t instanceof FirebaseFirestoreException) {
             FirebaseFirestoreException.Code c = ((FirebaseFirestoreException) t).getCode();
             return c == FirebaseFirestoreException.Code.UNAVAILABLE

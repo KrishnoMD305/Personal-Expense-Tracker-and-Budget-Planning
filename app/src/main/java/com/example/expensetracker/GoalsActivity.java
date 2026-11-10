@@ -1,5 +1,6 @@
 package com.example.expensetracker;
 
+import com.example.expensetracker.databinding.ActivityPlanListBinding;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.MenuItem;
@@ -14,7 +15,9 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import java.util.ArrayList;
 import java.util.List;
 
+/** All savings goals with progress bars; tap one for its contribution history and management. */
 public class GoalsActivity extends BaseActivity {
+    private ActivityPlanListBinding binding;
     private PlanRowAdapter adapter;
     private TextView emptyView;
     private List<GoalWithSaved> lastGoals;
@@ -22,14 +25,15 @@ public class GoalsActivity extends BaseActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_plan_list);
+        binding = ActivityPlanListBinding.inflate(getLayoutInflater());
+        setContentView(binding.getRoot());
         setTitle(R.string.goals);
         if (getSupportActionBar() != null) getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
-        emptyView = findViewById(R.id.planEmpty);
+        emptyView = binding.planEmpty;
         emptyView.setText(R.string.goals_empty);
-        ((TextView) findViewById(R.id.planIntro)).setText(R.string.goals_intro);
-        RecyclerView list = findViewById(R.id.planList);
+        binding.planIntro.setText(R.string.goals_intro);
+        RecyclerView list = binding.planList;
         adapter = new PlanRowAdapter(row -> {
             Intent i = new Intent(this, GoalDetailActivity.class);
             i.putExtra(GoalDetailActivity.EXTRA_GOAL_ID, ((GoalWithSaved) row.tag).goal.id);
@@ -38,7 +42,7 @@ public class GoalsActivity extends BaseActivity {
         list.setLayoutManager(new LinearLayoutManager(this));
         list.setAdapter(adapter);
 
-        FloatingActionButton fab = findViewById(R.id.planFab);
+        FloatingActionButton fab = binding.planFab;
         fab.setContentDescription(getString(R.string.goal_new));
         fab.setOnClickListener(v -> GoalDialogs.showGoalEditor(this, null));
 
@@ -51,7 +55,7 @@ public class GoalsActivity extends BaseActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        render();
+        render(); // "days left" changes with the date
     }
 
     private void render() {

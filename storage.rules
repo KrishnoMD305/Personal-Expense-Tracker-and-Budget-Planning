@@ -1,0 +1,15 @@
+rules_version = '2';
+
+// Personal Expense Tracker - Cloud Storage security rules (receipt photos).
+// A signed-in user can read, upload and delete ONLY files under users/{their own uid}/receipts/, and only
+// JPEG images up to 5 MB. Everything else is denied by default.
+service firebase.storage {
+  match /b/{bucket}/o {
+    match /users/{userId}/receipts/{fileName} {
+      allow read, delete: if request.auth != null && request.auth.uid == userId;
+      allow write: if request.auth != null && request.auth.uid == userId
+                   && request.resource.size < 5 * 1024 * 1024
+                   && request.resource.contentType == 'image/jpeg';
+    }
+  }
+}

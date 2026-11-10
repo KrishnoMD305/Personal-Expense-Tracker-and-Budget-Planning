@@ -1,5 +1,6 @@
 package com.example.expensetracker;
 
+import com.example.expensetracker.databinding.ActivitySplashBinding;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.animation.AnimatorSet;
@@ -23,6 +24,7 @@ import com.google.android.material.progressindicator.LinearProgressIndicator;
  * shows it again; it only appears on a fresh launch of the app.
  */
 public class SplashActivity extends AppCompatActivity {
+    private ActivitySplashBinding binding;
     private final Handler handler = new Handler(Looper.getMainLooper());
     private AnimatorSet intro;
     private ObjectAnimator fadeOut;
@@ -45,13 +47,14 @@ public class SplashActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         ThemeManager.apply(this);
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_splash);
+        binding = ActivitySplashBinding.inflate(getLayoutInflater());
+        setContentView(binding.getRoot());
         if (getSupportActionBar() != null) getSupportActionBar().hide();
 
-        root = findViewById(R.id.splashRoot);
-        logo = findViewById(R.id.splashLogo);
-        title = findViewById(R.id.splashTitle);
-        progress = findViewById(R.id.splashProgress);
+        root = binding.splashRoot;
+        logo = binding.splashLogo;
+        title = binding.splashTitle;
+        progress = binding.splashProgress;
     }
 
     @Override

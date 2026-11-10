@@ -1,5 +1,7 @@
 package com.example.expensetracker;
+
 import static org.junit.Assert.assertEquals;
+
 import org.junit.Test;
 
 public class MoneyUtilsTest {

@@ -10,6 +10,8 @@ dependencyResolutionManagement {
     repositories {
         google()
         mavenCentral()
+        // Stage 3: MPAndroidChart is published on JitPack only. Restricted to its own group so no
+        // other dependency can ever be resolved from this repository.
         maven {
             url 'https://jitpack.io'
             content {

@@ -1,8 +1,10 @@
 plugins {
     id 'com.android.application'
-    id 'com.google.gms.google-services'
 }
 
+// Stage 6: the Firebase config file is downloaded by YOU from the Firebase console and is not part of this
+// project. The plugin is applied only when the file exists, so the app still builds and runs (with cloud
+// features switched off and a "not configured" notice) if you have not added it yet.
 if (file('google-services.json').exists()) {
     apply plugin: 'com.google.gms.google-services'
 }
@@ -15,11 +17,12 @@ android {
         applicationId "com.example.expensetracker"
         minSdk 23
         targetSdk 33
-        versionCode 6
-        versionName "2026.0.0"
+        versionCode 7
+        versionName "2026.1.0"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
 
+        // Room exports its schema so database migrations can be verified (see app/schemas).
         javaCompileOptions {
             annotationProcessorOptions {
                 arguments = ["room.schemaLocation": "$projectDir/schemas".toString()]
@@ -36,6 +39,10 @@ android {
     sourceSets {
         androidTest.assets.srcDirs += files("$projectDir/schemas".toString())
     }
+    // Stage 7: View Binding replaces findViewById in every screen, dialog and adapter.
+    buildFeatures {
+        viewBinding true
+    }
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_17
         targetCompatibility JavaVersion.VERSION_17
@@ -50,24 +57,34 @@ dependencies {
     implementation 'androidx.cardview:cardview:1.0.0'
     implementation 'androidx.lifecycle:lifecycle-livedata:2.6.1'
 
+    // Stage 3: charts (pie/donut, grouped bars, line) - hosted on JitPack, see settings.gradle
     implementation 'com.github.PhilJay:MPAndroidChart:v3.1.0'
 
-
+    // Stage 4: background scheduling for recurring transactions and bill reminders
     implementation 'androidx.work:work-runtime:2.8.1'
 
-
+    // Stage 5: optional fingerprint / face unlock for the app lock
     implementation 'androidx.biometric:biometric:1.1.0'
 
+    // Stage 6: Firebase Authentication (email + password) and Cloud Firestore (cloud backup / sync).
+    // The BoM keeps every Firebase library on a matching version, so no version numbers are needed below.
     implementation platform('com.google.firebase:firebase-bom:32.2.3')
     implementation 'com.google.firebase:firebase-auth'
     implementation 'com.google.firebase:firebase-firestore'
+    // Stage 7: Realtime Database (profile + sync-log node) and Cloud Storage (receipt photos).
+    implementation 'com.google.firebase:firebase-database'
+    implementation 'com.google.firebase:firebase-storage'
+
+    // Stage 7: system photo picker (ActivityResultContracts.PickVisualMedia / TakePicture) and EXIF rotation of receipts.
+    implementation 'androidx.activity:activity:1.7.2'
+    implementation 'androidx.exifinterface:exifinterface:1.3.6'
 
     def room_version = "2.5.2"
     implementation "androidx.room:room-runtime:$room_version"
     annotationProcessor "androidx.room:room-compiler:$room_version"
 
     testImplementation 'junit:junit:4.13.2'
-
+    // Stage 5: a real org.json for JVM unit tests (the Android stub jar throws "not mocked")
     testImplementation 'org.json:json:20230227'
     androidTestImplementation 'androidx.test.ext:junit:1.1.5'
     androidTestImplementation 'androidx.test:runner:1.5.2'

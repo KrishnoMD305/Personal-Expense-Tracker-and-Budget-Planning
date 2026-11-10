@@ -4,9 +4,11 @@ import static com.example.expensetracker.TestDays.d;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+
 import java.util.TimeZone;
 
 public class PlanValidatorTest {
@@ -36,10 +38,10 @@ public class PlanValidatorTest {
 
     @Test
     public void goalDeadline() {
-        assertNull(PlanValidator.validateDeadline(0, TODAY, true));
-        assertNull(PlanValidator.validateDeadline(TODAY, TODAY, true));
-        assertNotNull(PlanValidator.validateDeadline(d(2026, 10, 16), TODAY, true));
-        assertNull(PlanValidator.validateDeadline(d(2026, 10, 16), TODAY, false));
+        assertNull(PlanValidator.validateDeadline(0, TODAY, true));                       // none is fine
+        assertNull(PlanValidator.validateDeadline(TODAY, TODAY, true));                   // today is fine
+        assertNotNull(PlanValidator.validateDeadline(d(2026, 10, 16), TODAY, true));      // new + past
+        assertNull(PlanValidator.validateDeadline(d(2026, 10, 16), TODAY, false));        // unchanged old deadline
     }
 
     @Test
@@ -47,8 +49,8 @@ public class PlanValidatorTest {
         assertNotNull(PlanValidator.validateRuleDates(0, 0, TODAY, true));
         assertNull(PlanValidator.validateRuleDates(TODAY, 0, TODAY, true));
         assertNotNull(PlanValidator.validateRuleDates(d(2026, 10, 16), 0, TODAY, true));
-        assertNull(PlanValidator.validateRuleDates(d(2026, 10, 1), 0, TODAY, false));
-        assertNull(PlanValidator.validateRuleDates(TODAY, TODAY, TODAY, true));
+        assertNull(PlanValidator.validateRuleDates(d(2026, 10, 1), 0, TODAY, false));     // existing rule, start unchanged
+        assertNull(PlanValidator.validateRuleDates(TODAY, TODAY, TODAY, true));           // end == start
         assertNotNull(PlanValidator.validateRuleDates(TODAY, d(2026, 10, 16), TODAY, true));
     }
 

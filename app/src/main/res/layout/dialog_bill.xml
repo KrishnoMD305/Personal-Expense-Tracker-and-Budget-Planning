@@ -27,6 +27,14 @@
                 android:maxLength="40" />
         </com.google.android.material.textfield.TextInputLayout>
 
+        <!-- Stage 7: ACTION_PICK on ContactsContract Phone.CONTENT_URI (the picker needs no permission) -->
+        <Button
+            android:id="@+id/billPickContactButton"
+            style="@style/Widget.MaterialComponents.Button.TextButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/bill_pick_contact" />
+
         <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/billAmountLayout"
             style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
@@ -80,6 +88,64 @@
             android:id="@+id/billReminderSpinner"
             android:layout_width="match_parent"
             android:layout_height="48dp" />
+
+        <!-- Stage 7: receipt photo (system photo picker or camera) -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:text="@string/bill_receipt"
+            android:textStyle="bold" />
+
+        <ImageView
+            android:id="@+id/receiptPreview"
+            android:layout_width="match_parent"
+            android:layout_height="140dp"
+            android:layout_marginTop="6dp"
+            android:contentDescription="@string/cd_receipt_preview"
+            android:scaleType="fitCenter"
+            android:visibility="gone" />
+
+        <TextView
+            android:id="@+id/receiptStatus"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:textColor="?attr/etTextTertiary"
+            android:textSize="13sp" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/receiptGalleryButton"
+                style="@style/Widget.MaterialComponents.Button.TextButton"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:minWidth="0dp"
+                android:text="@string/bill_receipt_gallery" />
+
+            <Button
+                android:id="@+id/receiptCameraButton"
+                style="@style/Widget.MaterialComponents.Button.TextButton"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:minWidth="0dp"
+                android:text="@string/bill_receipt_camera" />
+
+            <Button
+                android:id="@+id/receiptRemoveButton"
+                style="@style/Widget.MaterialComponents.Button.TextButton"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:minWidth="0dp"
+                android:text="@string/bill_receipt_remove" />
+        </LinearLayout>
 
         <TextView
             android:id="@+id/billFormError"

@@ -1,5 +1,6 @@
 package com.example.expensetracker;
 
+import com.example.expensetracker.databinding.DialogPinBinding;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.TextView;
@@ -36,14 +37,14 @@ final class PinDialogs {
     private static void show(final BaseActivity a, String title, String message, final boolean askCurrent,
                              final boolean askNew, final Result ok, final Runnable onCancel) {
         final AppSettings settings = AppSettings.get(a);
-        View v = LayoutInflater.from(a).inflate(R.layout.dialog_pin, null);
-        ((TextView) v.findViewById(R.id.pinDialogMessage)).setText(message);
-        final TextInputLayout curL = v.findViewById(R.id.currentPinLayout);
-        final TextInputLayout newL = v.findViewById(R.id.newPinLayout);
-        final TextInputLayout conL = v.findViewById(R.id.confirmPinLayout);
-        final TextInputEditText cur = v.findViewById(R.id.currentPin);
-        final TextInputEditText nw = v.findViewById(R.id.newPin);
-        final TextInputEditText con = v.findViewById(R.id.confirmPin);
+        final DialogPinBinding form = DialogPinBinding.inflate(LayoutInflater.from(a));
+        form.pinDialogMessage.setText(message);
+        final TextInputLayout curL = form.currentPinLayout;
+        final TextInputLayout newL = form.newPinLayout;
+        final TextInputLayout conL = form.confirmPinLayout;
+        final TextInputEditText cur = form.currentPin;
+        final TextInputEditText nw = form.newPin;
+        final TextInputEditText con = form.confirmPin;
         curL.setVisibility(askCurrent ? View.VISIBLE : View.GONE);
         newL.setVisibility(askNew ? View.VISIBLE : View.GONE);
         conL.setVisibility(askNew ? View.VISIBLE : View.GONE);
@@ -51,7 +52,7 @@ final class PinDialogs {
         final boolean[] finished = {false};
         final AlertDialog dialog = new AlertDialog.Builder(a)
                 .setTitle(title)
-                .setView(v)
+                .setView(form.getRoot())
                 .setNegativeButton(android.R.string.cancel, null)
                 .setPositiveButton(R.string.ok, null) // replaced below so errors keep the dialog open
                 .create();

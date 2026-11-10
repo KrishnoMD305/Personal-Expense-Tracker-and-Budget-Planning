@@ -30,4 +30,11 @@ public interface BillDao {
 
     @Query("UPDATE bills SET lastNotifiedDay = :day WHERE id = :id")
     void setLastNotifiedDay(long id, long day);
+
+    /** Stage 7: bills that have a receipt photo (used to upload / download the photos). */
+    @Query("SELECT * FROM bills WHERE receiptFile != '' ORDER BY id")
+    List<Bill> getWithReceipt();
+
+    @Query("UPDATE bills SET receiptCloudPath = :path WHERE id = :id AND receiptFile = :file")
+    void setReceiptCloudPath(long id, String file, String path);
 }

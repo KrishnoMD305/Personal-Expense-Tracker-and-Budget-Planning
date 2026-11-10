@@ -56,6 +56,18 @@ final class CloudSync {
 
     enum Outcome { UPLOADED, UNCHANGED, CONFLICT }
 
+    /** Stage 7: what a progress callback is about. */
+    static final int STAGE_CHECK = 1;      // talking to the server / comparing
+    static final int STAGE_UPLOAD = 2;     // writing rows to Firestore (done / total rows)
+    static final int STAGE_DOWNLOAD = 3;   // reading collections from Firestore (done / total collections)
+    static final int STAGE_RESTORE = 4;    // replacing the local database
+    static final int STAGE_RECEIPTS = 5;   // receipt photos in Firebase Storage (done / total photos)
+
+    /** Stage 7: progress reports for the foreground backup / restore service. Called on the worker thread. */
+    interface ProgressListener {
+        void onProgress(int stage, int done, int total);
+    }
+
     /** What an upload did. */
     static final class UploadResult {
         final Outcome outcome;
@@ -114,6 +126,11 @@ final class CloudSync {
      * @param force true = replace the cloud copy even if another device wrote it (the user confirmed)
      */
     static UploadResult upload(Context context, boolean force) throws CloudException {
+        return upload(context, force, null);
+    }
+
+    /** Same as {@link #upload(Context, boolean)} but reports progress (rows written so far) to {@code progress}. */
+    static UploadResult upload(Context context, boolean force, ProgressListener progress) throws CloudException {
         synchronized (LOCK) {
             final Context app = context.getApplicationContext();
             final String uid = requireUid(app);
@@ -121,6 +138,7 @@ final class CloudSync {
             final DocumentReference userDoc = userDoc(uid);
 
             // 1) Probe: proves the network works BEFORE anything is written, and detects a conflicting copy.
+            report(progress, STAGE_CHECK, 0, 0);
             DocumentSnapshot metaSnap = await(userDoc.get(Source.SERVER));
             RemoteInfo remote = metaSnap.exists() ? readInfo(metaSnap) : null;
             long base = settings.cloudBase(uid);
@@ -155,8 +173,11 @@ final class CloudSync {
 
                 // 4) Write changed rows, delete rows that no longer exist on the device.
                 FirebaseFirestore db = firestore();
+                final int[] done = {0};
+                final int total = data.totalRows();
+                report(progress, STAGE_UPLOAD, 0, total);
                 for (String col : CloudDocs.COLLECTIONS) {
-                    syncCollection(db, userDoc.collection(col), rows.get(col));
+                    syncCollection(db, userDoc.collection(col), rows.get(col), progress, done, total);
                 }
 
                 // 5) Only now declare the copy complete, with its new version stamp.
@@ -179,6 +200,11 @@ final class CloudSync {
      * @throws BackupException the cloud copy is incomplete or damaged
      */
     static BackupData download(Context context) throws CloudException, BackupException {
+        return download(context, null);
+    }
+
+    /** Same as {@link #download(Context)} but reports progress (collections read so far). */
+    static BackupData download(Context context, ProgressListener progress) throws CloudException, BackupException {
         synchronized (LOCK) {
             String uid = requireUid(context);
             DocumentReference userDoc = userDoc(uid);
@@ -193,7 +219,9 @@ final class CloudSync {
                         + "Open the app on the device that has your data and use \"Back up now\".", false);
             }
             Map<String, List<Map<String, Object>>> rows = new LinkedHashMap<>();
+            int collectionsRead = 0;
             for (String col : CloudDocs.COLLECTIONS) {
+                report(progress, STAGE_DOWNLOAD, collectionsRead++, CloudDocs.COLLECTIONS.length);
                 QuerySnapshot snap = await(userDoc.collection(col).get(Source.SERVER));
                 List<Map<String, Object>> list = new ArrayList<>(snap.size());
                 for (QueryDocumentSnapshot doc : snap) {
@@ -210,6 +238,7 @@ final class CloudSync {
                 }
                 rows.put(col, list);
             }
+            report(progress, STAGE_DOWNLOAD, CloudDocs.COLLECTIONS.length, CloudDocs.COLLECTIONS.length);
             try {
                 return BackupJson.parse(CloudDocs.assemble(meta, rows));
             } catch (JSONException e) {
@@ -246,8 +275,13 @@ final class CloudSync {
 
     // ------------------------------------------------------------------ internals
 
+    private static void report(ProgressListener l, int stage, int done, int total) {
+        if (l != null) l.onProgress(stage, done, total);
+    }
+
     private static void syncCollection(FirebaseFirestore db, CollectionReference col,
-                                       List<Map<String, Object>> local) throws CloudException {
+                                       List<Map<String, Object>> local, ProgressListener progress,
+                                       int[] done, int total) throws CloudException {
         QuerySnapshot remoteSnap = await(col.get(Source.SERVER));
         Map<String, Map<String, Object>> remote = new HashMap<>();
         for (QueryDocumentSnapshot doc : remoteSnap) remote.put(doc.getId(), doc.getData());
@@ -259,12 +293,14 @@ final class CloudSync {
             for (Map<String, Object> row : local) {
                 String id = CloudDocs.docId(row);
                 localIds.add(id);
+                done[0]++;
                 if (row.equals(remote.get(id))) continue; // already up to date in the cloud
                 batch.set(col.document(id), row);
                 if (++pending >= BATCH_SIZE) {
                     await(batch.commit());
                     batch = db.batch();
                     pending = 0;
+                    report(progress, STAGE_UPLOAD, done[0], total);
                 }
             }
         }
@@ -278,6 +314,7 @@ final class CloudSync {
             }
         }
         if (pending > 0) await(batch.commit());
+        report(progress, STAGE_UPLOAD, done[0], total);
     }
 
     private static RemoteInfo readInfo(DocumentSnapshot snap) {
@@ -306,7 +343,7 @@ final class CloudSync {
      * The Firestore instance. The offline write queue is switched off: with it on, a write made without internet
      * would stay queued and be sent later, long after the user saw "failed". Here a failed upload is simply failed.
      */
-    private static FirebaseFirestore firestore() {
+    static FirebaseFirestore firestore() {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
         synchronized (CloudSync.class) {
             if (!settingsApplied) {
@@ -329,7 +366,7 @@ final class CloudSync {
                 ? model : (maker + " " + model).trim();
     }
 
-    private static <T> T await(Task<T> task) throws CloudException {
+    static <T> T await(Task<T> task) throws CloudException {
         try {
             return Tasks.await(task, TIMEOUT_SECONDS, TimeUnit.SECONDS);
         } catch (ExecutionException e) {

@@ -1,5 +1,6 @@
 package com.example.expensetracker;
 
+import com.example.expensetracker.databinding.ActivityMainBinding;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
@@ -19,6 +20,7 @@ import java.util.Arrays;
 import java.util.List;
 
 public class MainActivity extends BaseActivity {
+    private ActivityMainBinding binding;
 
     private TextView balanceView, incomeView, expenseView, emptyView;
     private TextView budgetTitle, budgetPercent, budgetLine1, budgetLine2, budgetAlerts;
@@ -29,7 +31,9 @@ public class MainActivity extends BaseActivity {
     private List<String> expenseCategories;
     private String boundMonth;
     private LiveData<MonthOverview> budgetSource;
+    private DeviceStateReceiver deviceReceiver; // Stage 7
 
+    // Stage 4: planning summaries (savings goals, recurring transactions, bills)
     private TextView goalsBadge, goalsLine1, goalsLine2, recurringBadge, recurringLine1, recurringLine2,
             billsBadge, billsLine1, billsLine2;
     private LinearProgressIndicator goalsProgress;
@@ -40,30 +44,31 @@ public class MainActivity extends BaseActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        binding = ActivityMainBinding.inflate(getLayoutInflater());
+        setContentView(binding.getRoot());
 
-        balanceView = findViewById(R.id.balanceValue);
-        incomeView = findViewById(R.id.incomeValue);
-        expenseView = findViewById(R.id.expenseValue);
-        emptyView = findViewById(R.id.emptyView);
-        budgetTitle = findViewById(R.id.budgetCardTitle);
-        budgetPercent = findViewById(R.id.budgetCardPercent);
-        budgetLine1 = findViewById(R.id.budgetCardLine1);
-        budgetLine2 = findViewById(R.id.budgetCardLine2);
-        budgetAlerts = findViewById(R.id.budgetCardAlerts);
-        budgetProgress = findViewById(R.id.budgetCardProgress);
-        goalsBadge = findViewById(R.id.goalsBadge);
-        goalsLine1 = findViewById(R.id.goalsLine1);
-        goalsLine2 = findViewById(R.id.goalsLine2);
-        goalsProgress = findViewById(R.id.goalsProgress);
-        recurringBadge = findViewById(R.id.recurringBadge);
-        recurringLine1 = findViewById(R.id.recurringLine1);
-        recurringLine2 = findViewById(R.id.recurringLine2);
-        billsBadge = findViewById(R.id.billsBadge);
-        billsLine1 = findViewById(R.id.billsLine1);
-        billsLine2 = findViewById(R.id.billsLine2);
-        RecyclerView recycler = findViewById(R.id.transactionList);
-        FloatingActionButton fab = findViewById(R.id.fabAdd);
+        balanceView = binding.balanceValue;
+        incomeView = binding.incomeValue;
+        expenseView = binding.expenseValue;
+        emptyView = binding.emptyView;
+        budgetTitle = binding.budgetCardTitle;
+        budgetPercent = binding.budgetCardPercent;
+        budgetLine1 = binding.budgetCardLine1;
+        budgetLine2 = binding.budgetCardLine2;
+        budgetAlerts = binding.budgetCardAlerts;
+        budgetProgress = binding.budgetCardProgress;
+        goalsBadge = binding.goalsBadge;
+        goalsLine1 = binding.goalsLine1;
+        goalsLine2 = binding.goalsLine2;
+        goalsProgress = binding.goalsProgress;
+        recurringBadge = binding.recurringBadge;
+        recurringLine1 = binding.recurringLine1;
+        recurringLine2 = binding.recurringLine2;
+        billsBadge = binding.billsBadge;
+        billsLine1 = binding.billsLine1;
+        billsLine2 = binding.billsLine2;
+        RecyclerView recycler = binding.transactionList;
+        FloatingActionButton fab = binding.fabAdd;
 
         expenseCategories = Arrays.asList(getResources().getStringArray(R.array.expense_categories));
 
@@ -86,16 +91,17 @@ public class MainActivity extends BaseActivity {
         });
 
         fab.setOnClickListener(v -> startActivity(new Intent(this, AddTransactionActivity.class)));
-        findViewById(R.id.budgetCard).setOnClickListener(v ->
+        binding.budgetCard.setOnClickListener(v ->
                 startActivity(new Intent(this, BudgetActivity.class)));
-        findViewById(R.id.reportsButton).setOnClickListener(v ->
+        binding.reportsButton.setOnClickListener(v ->
                 startActivity(new Intent(this, ReportsActivity.class)));
 
-        findViewById(R.id.goalsSection).setOnClickListener(v ->
+        // Stage 4: planning card. Each section opens its screen; LiveData keeps the numbers current.
+        binding.goalsSection.setOnClickListener(v ->
                 startActivity(new Intent(this, GoalsActivity.class)));
-        findViewById(R.id.recurringSection).setOnClickListener(v ->
+        binding.recurringSection.setOnClickListener(v ->
                 startActivity(new Intent(this, RecurringActivity.class)));
-        findViewById(R.id.billsSection).setOnClickListener(v ->
+        binding.billsSection.setOnClickListener(v ->
                 startActivity(new Intent(this, BillsActivity.class)));
         GoalRepository.observeAll(this).observe(this, goals -> {
             lastGoals = goals;
@@ -109,6 +115,82 @@ public class MainActivity extends BaseActivity {
             lastBills = bills;
             renderPlanning();
         });
+    }
+
+    // ------------------------------------------------------------------ Stage 7: device-state banner
+
+    /** Dynamic registration: these broadcasts cannot be declared in the manifest, so we listen only while visible. */
+    @Override
+    protected void onStart() {
+        super.onStart();
+        if (deviceReceiver == null) {
+            deviceReceiver = new DeviceStateReceiver(DeviceStateReader.read(this), this::renderDeviceBanner);
+        }
+        deviceReceiver.register(this); // registerReceiver(); also shows the current state straight away
+    }
+
+    @Override
+    protected void onStop() {
+        if (deviceReceiver != null) deviceReceiver.unregister(this); // unregisterReceiver()
+        super.onStop();
+    }
+
+    private void renderDeviceBanner(DeviceStatus status) {
+        String text;
+        switch (status.banner()) {
+            case OFFLINE:
+                text = getString(R.string.banner_offline);
+                break;
+            case BATTERY_LOW:
+                text = getString(R.string.banner_battery_low);
+                break;
+            case OFFLINE_AND_BATTERY_LOW:
+                text = getString(R.string.banner_offline) + "\n" + getString(R.string.banner_battery_low);
+                break;
+            default:
+                text = null;
+        }
+        binding.deviceBanner.setVisibility(text == null ? View.GONE : View.VISIBLE);
+        if (text != null) binding.deviceBanner.setText(text);
+    }
+
+    // ------------------------------------------------------------------ Stage 7: exchange rates (REST + JSON)
+
+    private void showExchangeRates() {
+        final AlertDialog dialog = new AlertDialog.Builder(this)
+                .setTitle(R.string.rates_title)
+                .setMessage(R.string.rates_loading)
+                .setPositiveButton(R.string.ok, null)
+                .show();
+        final long balancePaisa = totalIncome - totalExpense;
+        ExchangeRateClient.load(this, result -> {
+            if (isFinishing() || isDestroyed() || !dialog.isShowing()) return;
+            dialog.setMessage(ratesText(result, balancePaisa));
+        });
+    }
+
+    private String ratesText(ExchangeRateClient.Result r, long balancePaisa) {
+        if (r.rates == null) return getString(R.string.rates_failed, r.error);
+        StringBuilder sb = new StringBuilder();
+        for (String code : ExchangeRates.SHOWN) {
+            if (!r.rates.has(code)) continue;
+            sb.append(getString(R.string.rates_line, code, ExchangeRates.plain(r.rates.homePer(code)))).append('\n');
+        }
+        double balance = balancePaisa / 100.0;
+        if (r.rates.has("USD")) {
+            sb.append('\n').append(getString(R.string.rates_balance, MoneyUtils.format(balancePaisa),
+                    ExchangeRates.plain(r.rates.convertFromHome(balance, "USD"))));
+        }
+        java.text.DateFormat f = java.text.DateFormat.getDateTimeInstance(java.text.DateFormat.MEDIUM,
+                java.text.DateFormat.SHORT);
+        if (r.rates.updatedMillis > 0) {
+            sb.append("\n\n").append(getString(R.string.rates_updated, f.format(new java.util.Date(r.rates.updatedMillis))));
+        }
+        if (r.fromCache) {
+            sb.append("\n").append(getString(R.string.rates_cached, r.fetchedMillis > 0
+                    ? f.format(new java.util.Date(r.fetchedMillis)) : "?", r.error));
+        }
+        return sb.toString().trim();
     }
 
     @Override
@@ -127,6 +209,10 @@ public class MainActivity extends BaseActivity {
             startActivity(new Intent(this, CloudAccountActivity.class));
             return true;
         }
+        if (item.getItemId() == R.id.action_rates) {
+            showExchangeRates();
+            return true;
+        }
         if (item.getItemId() == R.id.action_about) {
             startActivity(new Intent(this, AboutActivity.class));
             return true;
@@ -142,7 +228,7 @@ public class MainActivity extends BaseActivity {
         renderPlanning();          // "today" may have changed: overdue bills, days left, forecast window
     }
 
-
+    // ------------------------------------------------------------------ Stage 4 dashboard
 
     private void renderPlanning() {
         if (lastGoals == null && lastRules == null && lastBills == null) return;
@@ -272,7 +358,7 @@ public class MainActivity extends BaseActivity {
     }
 
     private void refreshSummary() {
-        long balance = totalIncome - totalExpense;
+        long balance = totalIncome - totalExpense; // exact: whole paisa
         balanceView.setText(MoneyUtils.format(balance));
         balanceView.setTextColor(ThemeColors.get(this,
                 balance < 0 ? R.attr.etHeroExpense : R.attr.etOnHero));
@@ -286,6 +372,7 @@ public class MainActivity extends BaseActivity {
         startActivity(i);
     }
 
+    /** Long-press menu: Edit or Delete (Stage 1 long-press delete is still one tap away). */
     private void showOptions(Transaction t) {
         new AlertDialog.Builder(this)
                 .setTitle(t.category)
@@ -304,7 +391,8 @@ public class MainActivity extends BaseActivity {
                 .setNegativeButton(android.R.string.cancel, null)
                 .setPositiveButton(R.string.delete, (d, w) -> {
                     AppDatabase.WRITE_EXECUTOR.execute(() -> dao.delete(t));
-                    Snackbar.make(findViewById(R.id.mainRoot), R.string.deleted, Snackbar.LENGTH_LONG)
+                    // Totals and budgets refresh by themselves through LiveData; offer an undo.
+                    Snackbar.make(binding.mainRoot, R.string.deleted, Snackbar.LENGTH_LONG)
                             .setAction(R.string.undo, v ->
                                     AppDatabase.WRITE_EXECUTOR.execute(() -> dao.insert(t)))
                             .show();

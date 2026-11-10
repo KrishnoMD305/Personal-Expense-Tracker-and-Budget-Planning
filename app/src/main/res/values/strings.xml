@@ -19,7 +19,7 @@
     <string name="delete">Delete</string>
     <string name="cd_add">Add transaction</string>
 
-
+    <!-- Stage 2: edit / delete -->
     <string name="edit_transaction">Edit Transaction</string>
     <string name="update_transaction">Update Transaction</string>
     <string name="updated">Transaction updated</string>
@@ -30,7 +30,7 @@
     <string name="save_failed">Could not save. Please try again.</string>
     <string name="ok">OK</string>
 
-
+    <!-- Stage 2: budgets -->
     <string name="budgets">Budgets</string>
     <string name="monthly_budget">Monthly budget</string>
     <string name="set_monthly_budget">Set monthly budget</string>
@@ -63,6 +63,7 @@
     <string name="budget_alert_title">Budget alert</string>
     <string name="cd_budget_progress">Budget progress</string>
 
+    <!-- Stage 3: reports -->
     <string name="reports">Reports</string>
     <string name="rep_open">Reports &amp; insights</string>
     <string name="rep_mode_month">Month</string>
@@ -112,7 +113,7 @@
     <string name="cd_line_chart">Line chart of spending over time</string>
     <string name="cd_report_progress">Loading report</string>
 
-
+    <!-- Stage 4: shared -->
     <string name="clear">Clear</string>
     <plurals name="days_count">
         <item quantity="one">%d day</item>
@@ -126,7 +127,7 @@
     <string name="dash_in">in %1$s</string>
     <string name="dash_overdue_by">overdue by %1$s</string>
 
-
+    <!-- Stage 4: dashboard -->
     <string name="dash_goals_title">Savings goals</string>
     <string name="dash_goals_none">No savings goals yet. Tap to create one.</string>
     <string name="dash_goals_all_archived">All goals are archived. Tap to manage them.</string>
@@ -151,7 +152,7 @@
     <string name="dash_bills_soon">Due in the next %1$d days: %2$s • %3$s</string>
     <string name="dash_bills_next">Next: %1$s • %2$s • %3$s</string>
 
-
+    <!-- Stage 4: savings goals -->
     <string name="goals">Savings goals</string>
     <string name="goals_intro">Set a target, add contributions, and watch the progress bar fill. Contributions are tracked separately and do not change your balance.</string>
     <string name="goals_empty">No savings goals yet.\nTap + to create your first one.</string>
@@ -189,7 +190,7 @@
     <string name="goal_delete_contribution_message">%1$s on %2$s will be removed from this goal.</string>
     <string name="cd_goal_progress">Savings goal progress</string>
 
-
+    <!-- Stage 4: recurring transactions -->
     <string name="recurring">Recurring transactions</string>
     <string name="rec_intro">Scheduled income and expenses are added to your history automatically on their due date. Each date is only ever added once.</string>
     <string name="rec_empty">No recurring transactions yet.\nTap + to schedule one (salary, rent, subscriptions...).</string>
@@ -220,6 +221,7 @@
         <item>Monthly</item>
     </string-array>
 
+    <!-- Stage 4: bills -->
     <string name="bills">Bills</string>
     <string name="bills_intro">Add bills with a due date and a reminder. Unpaid bills past their due date are shown as overdue.</string>
     <string name="bills_empty">No bills yet.\nTap + to add your first bill.</string>
@@ -254,7 +256,7 @@
         <item>1 week before</item>
     </string-array>
 
-
+    <!-- Stage 4: notifications -->
     <string name="channel_bills_name">Bill reminders</string>
     <string name="channel_bills_desc">Reminders for bills that are due soon or overdue</string>
     <string name="notif_due_in">Due in %1$s • %2$s</string>
@@ -284,6 +286,7 @@
         <item>Other Expense</item>
     </string-array>
 
+    <!-- Stage 5: welcome screen, themes, about -->
     <string name="welcome_message">Welcome to the Personal Expense Tracker and Budget Planning Application</string>
     <string name="settings">Settings</string>
     <string name="about">About</string>
@@ -298,7 +301,7 @@
     <string name="settings_appearance">Appearance</string>
     <string name="settings_theme_hint">Choose a theme. It is applied to every screen and remembered.</string>
 
-
+    <!-- Stage 5: security -->
     <string name="settings_security">Security</string>
     <string name="settings_lock">Lock the app with a PIN</string>
     <string name="settings_lock_hint">Ask for a 4\u20136 digit PIN when the app is opened. The PIN is stored only as a salted hash and cannot be recovered: if you forget it, the only way back in is to clear the app\u2019s data in Android settings. Keep a backup.</string>
@@ -385,7 +388,7 @@
     <string name="restore_done_title">Restore complete</string>
     <string name="restore_done_message">Your data has been restored.</string>
 
-
+    <!-- Stage 6: Firebase cloud account and backup -->
     <string name="cloud_account">Cloud account (Firebase)</string>
     <string name="cloud_status_not_configured">Not set up: add google-services.json (see FIREBASE_SETUP_GUIDE.md)</string>
     <string name="cloud_status_signed_out">Not signed in \u2022 tap to sign in and back up to the cloud</string>
@@ -451,4 +454,75 @@
     <string name="cloud_deleted_toast">Cloud data deleted</string>
     <string name="cloud_auto_on_toast">Daily cloud backup is on</string>
     <string name="cloud_delete_failed_title">Could not delete</string>
+    <!-- ===================== Stage 7 ===================== -->
+    <!-- Dashboard banner (BroadcastReceiver) -->
+    <string name="banner_offline">Offline \u2013 cloud backup paused</string>
+    <string name="banner_battery_low">Battery low \u2013 auto-backup deferred</string>
+
+    <!-- Bills: contacts + receipt -->
+    <string name="bill_pick_contact">Pick payee from Contacts</string>
+    <string name="bill_no_contacts_app">No Contacts app was found on this device.</string>
+    <string name="bill_contact_failed">Could not read that contact\'s name.</string>
+    <string name="bill_receipt">Receipt photo</string>
+    <string name="bill_receipt_gallery">Gallery</string>
+    <string name="bill_receipt_camera">Camera</string>
+    <string name="bill_receipt_remove">Remove</string>
+    <string name="bill_receipt_none">No receipt attached.</string>
+    <string name="bill_receipt_attached">Receipt attached (saved on this device).</string>
+    <string name="bill_receipt_not_on_device">A receipt is attached, but its photo is not on this device. Choose View receipt to download it.</string>
+    <string name="bill_receipt_saving">Saving picture\u2026</string>
+    <string name="bill_receipt_failed">The picture could not be saved. Please try another one.</string>
+    <string name="bill_receipt_tag">Receipt</string>
+    <string name="bill_receipt_view">View receipt</string>
+    <string name="bill_receipt_downloading">Downloading receipt\u2026</string>
+    <string name="bill_receipt_uploaded">Receipt uploaded to your cloud account</string>
+    <string name="bill_receipt_upload_failed">Receipt saved on this device, but the upload failed: %1$s</string>
+    <string name="bill_no_camera_app">No camera app was found on this device.</string>
+    <string name="bill_no_image_viewer">No app on this device can show pictures.</string>
+    <string name="cd_receipt_preview">Preview of the receipt photo</string>
+
+    <!-- Foreground backup / restore service -->
+    <string name="channel_backup_name">Cloud backup</string>
+    <string name="channel_backup_desc">Progress and result of cloud backup and restore</string>
+    <string name="job_title_backup">Backing up to the cloud</string>
+    <string name="job_title_restore">Restoring from the cloud</string>
+    <string name="job_starting_backup">Starting backup\u2026</string>
+    <string name="job_starting_restore">Starting restore\u2026</string>
+    <string name="job_stage_check">Contacting the cloud\u2026</string>
+    <string name="job_stage_upload">Uploading records: %1$d of %2$d</string>
+    <string name="job_stage_download">Downloading: %1$d of %2$d parts</string>
+    <string name="job_stage_restore">Replacing the data on this device\u2026</string>
+    <string name="job_stage_receipts">Receipt photos: %1$d of %2$d</string>
+    <string name="job_run_in_background">Keep running in background</string>
+    <string name="job_already_running">A backup or restore is already running.</string>
+    <string name="job_cannot_start">The backup service could not be started: %1$s</string>
+    <string name="job_not_signed_in">You are not signed in.</string>
+    <string name="job_airplane">Airplane mode is on. Turn it off and try again.</string>
+    <string name="job_done_backup">Cloud backup finished</string>
+    <string name="job_done_restore">Cloud restore finished</string>
+    <string name="job_failed_backup">Cloud backup failed</string>
+    <string name="job_failed_restore">Cloud restore failed</string>
+    <string name="job_conflict_title">Cloud backup needs your decision</string>
+    <string name="job_conflict_text">Another device changed the cloud copy. Open Cloud account to choose.</string>
+    <string name="job_restore_done">%1$d records were restored from the cloud.</string>
+    <string name="job_receipts_uploaded">%1$d receipt photo(s) uploaded.</string>
+    <string name="job_receipts_failed">%1$d receipt photo(s) could not be uploaded (they stay on this device and are retried next time): %2$s</string>
+    <string name="job_receipts_downloaded">%1$d receipt photo(s) downloaded.</string>
+    <string name="job_receipts_download_failed">%1$d receipt photo(s) could not be downloaded; open the bill and choose View receipt to retry.</string>
+    <string name="cloud_restore_confirm_generic">All data on this device will be replaced by your cloud backup. A safety copy of the current data is saved first, and nothing changes if the cloud copy is incomplete or damaged.</string>
+
+    <!-- Realtime Database activity log -->
+    <string name="cloud_activity_title">Recent cloud activity</string>
+    <string name="cloud_activity_loading">Loading\u2026</string>
+    <string name="cloud_activity_none">No activity recorded yet.</string>
+
+    <!-- Exchange rates (REST + JSON) -->
+    <string name="rates_menu">Exchange rates</string>
+    <string name="rates_title">Exchange rates</string>
+    <string name="rates_loading">Loading current rates\u2026</string>
+    <string name="rates_line">1 %1$s = \u09F3 %2$s</string>
+    <string name="rates_balance">Your balance %1$s \u2248 US$ %2$s</string>
+    <string name="rates_updated">Rates updated by the provider: %1$s</string>
+    <string name="rates_cached">Offline \u2013 showing rates saved on %1$s. (%2$s)</string>
+    <string name="rates_failed">Could not load exchange rates.\n\n%1$s</string>
 </resources>

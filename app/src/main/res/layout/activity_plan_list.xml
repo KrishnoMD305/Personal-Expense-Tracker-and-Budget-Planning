@@ -11,6 +11,7 @@
         android:layout_height="match_parent"
         android:orientation="vertical">
 
+        <!-- Shown by the Bills screen when notifications are off -->
         <LinearLayout
             android:id="@+id/notifBanner"
             android:layout_width="match_parent"

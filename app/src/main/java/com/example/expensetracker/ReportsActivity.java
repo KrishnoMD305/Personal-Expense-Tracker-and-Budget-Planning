@@ -1,5 +1,8 @@
 package com.example.expensetracker;
 
+import com.example.expensetracker.databinding.ItemReportRowBinding;
+import com.example.expensetracker.databinding.ItemReportBudgetBinding;
+import com.example.expensetracker.databinding.ActivityReportsBinding;
 import android.app.DatePickerDialog;
 import android.graphics.Color;
 import android.os.Bundle;
@@ -41,8 +44,15 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
-
+/**
+ * Stage 3: category pie/donut chart, monthly income-vs-expense bars, summaries, month-to-month
+ * comparison, spending insights and budget-vs-actual, for a chosen month or a custom date range.
+ *
+ * <p>Every number comes from {@link ReportCalculator} over live Room data. Changing the period
+ * detaches the old LiveData and attaches a new one, so the screen can never show stale figures.
+ */
 public class ReportsActivity extends BaseActivity {
+    private ActivityReportsBinding binding;
     private static final String STATE_MODE = "mode";
     private static final String STATE_MONTH = "month";
     private static final String STATE_FIRST = "first_day";
@@ -83,7 +93,8 @@ public class ReportsActivity extends BaseActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_reports);
+        binding = ActivityReportsBinding.inflate(getLayoutInflater());
+        setContentView(binding.getRoot());
         export = new ExportController(this, savedInstanceState);
         if (getSupportActionBar() != null) getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
@@ -125,14 +136,14 @@ public class ReportsActivity extends BaseActivity {
             }
         });
 
-        findViewById(R.id.prevMonth).setOnClickListener(v -> changeMonth(-1));
-        findViewById(R.id.nextMonth).setOnClickListener(v -> changeMonth(1));
+        binding.prevMonth.setOnClickListener(v -> changeMonth(-1));
+        binding.nextMonth.setOnClickListener(v -> changeMonth(1));
         startDateButton.setOnClickListener(v -> pickDate(true));
         endDateButton.setOnClickListener(v -> pickDate(false));
-        findViewById(R.id.preset7).setOnClickListener(v -> applyLastDays(7));
-        findViewById(R.id.preset30).setOnClickListener(v -> applyLastDays(30));
-        findViewById(R.id.preset90).setOnClickListener(v -> applyLastDays(90));
-        findViewById(R.id.presetYtd).setOnClickListener(v -> applyYearToDate());
+        binding.preset7.setOnClickListener(v -> applyLastDays(7));
+        binding.preset30.setOnClickListener(v -> applyLastDays(30));
+        binding.preset90.setOnClickListener(v -> applyLastDays(90));
+        binding.presetYtd.setOnClickListener(v -> applyYearToDate());
 
         bind();
     }
@@ -147,47 +158,47 @@ public class ReportsActivity extends BaseActivity {
     }
 
     private void findViews() {
-        modeToggle = findViewById(R.id.modeToggle);
-        monthRow = findViewById(R.id.monthRow);
-        customRow = findViewById(R.id.customRow);
-        monthLabel = findViewById(R.id.monthLabel);
-        statusMessage = findViewById(R.id.statusMessage);
-        startDateButton = findViewById(R.id.startDateButton);
-        endDateButton = findViewById(R.id.endDateButton);
-        loadingBar = findViewById(R.id.loadingBar);
+        modeToggle = binding.modeToggle;
+        monthRow = binding.monthRow;
+        customRow = binding.customRow;
+        monthLabel = binding.monthLabel;
+        statusMessage = binding.statusMessage;
+        startDateButton = binding.startDateButton;
+        endDateButton = binding.endDateButton;
+        loadingBar = binding.loadingBar;
 
-        summaryCard = findViewById(R.id.summaryCard);
-        compareCard = findViewById(R.id.compareCard);
-        categoryCard = findViewById(R.id.categoryCard);
-        barCard = findViewById(R.id.barCard);
-        trendCard = findViewById(R.id.trendCard);
-        largestCard = findViewById(R.id.largestCard);
+        summaryCard = binding.summaryCard;
+        compareCard = binding.compareCard;
+        categoryCard = binding.categoryCard;
+        barCard = binding.barCard;
+        trendCard = binding.trendCard;
+        largestCard = binding.largestCard;
 
-        periodTitle = findViewById(R.id.periodTitle);
-        sumIncome = findViewById(R.id.sumIncome);
-        sumExpense = findViewById(R.id.sumExpense);
-        sumNet = findViewById(R.id.sumNet);
-        sumSavingsRate = findViewById(R.id.sumSavingsRate);
-        sumMeta = findViewById(R.id.sumMeta);
-        compareTitle = findViewById(R.id.compareTitle);
-        compareContainer = findViewById(R.id.compareContainer);
-        topCategoriesHeading = findViewById(R.id.topCategoriesHeading);
-        topCategoriesContainer = findViewById(R.id.topCategoriesContainer);
-        barNote = findViewById(R.id.barNote);
-        monthlyContainer = findViewById(R.id.monthlyContainer);
-        trendTitle = findViewById(R.id.trendTitle);
-        insightsHeading = findViewById(R.id.insightsHeading);
-        insightsContainer = findViewById(R.id.insightsContainer);
-        largestExpensesHeading = findViewById(R.id.largestExpensesHeading);
-        largestExpensesContainer = findViewById(R.id.largestExpensesContainer);
-        largestIncomeHeading = findViewById(R.id.largestIncomeHeading);
-        largestIncomeContainer = findViewById(R.id.largestIncomeContainer);
-        budgetNote = findViewById(R.id.budgetNote);
-        budgetContainer = findViewById(R.id.budgetContainer);
+        periodTitle = binding.periodTitle;
+        sumIncome = binding.sumIncome;
+        sumExpense = binding.sumExpense;
+        sumNet = binding.sumNet;
+        sumSavingsRate = binding.sumSavingsRate;
+        sumMeta = binding.sumMeta;
+        compareTitle = binding.compareTitle;
+        compareContainer = binding.compareContainer;
+        topCategoriesHeading = binding.topCategoriesHeading;
+        topCategoriesContainer = binding.topCategoriesContainer;
+        barNote = binding.barNote;
+        monthlyContainer = binding.monthlyContainer;
+        trendTitle = binding.trendTitle;
+        insightsHeading = binding.insightsHeading;
+        insightsContainer = binding.insightsContainer;
+        largestExpensesHeading = binding.largestExpensesHeading;
+        largestExpensesContainer = binding.largestExpensesContainer;
+        largestIncomeHeading = binding.largestIncomeHeading;
+        largestIncomeContainer = binding.largestIncomeContainer;
+        budgetNote = binding.budgetNote;
+        budgetContainer = binding.budgetContainer;
 
-        pieChart = findViewById(R.id.pieChart);
-        barChart = findViewById(R.id.barChart);
-        lineChart = findViewById(R.id.lineChart);
+        pieChart = binding.pieChart;
+        barChart = binding.barChart;
+        lineChart = binding.lineChart;
     }
 
     // ------------------------------------------------------------------ period selection
@@ -281,7 +292,7 @@ public class ReportsActivity extends BaseActivity {
         statusMessage.setText(message);
         statusMessage.setVisibility(View.VISIBLE);
         for (View v : new View[]{summaryCard, compareCard, categoryCard, barCard, trendCard, largestCard,
-                findViewById(R.id.budgetSectionCard)}) {
+                binding.budgetSectionCard}) {
             v.setVisibility(View.GONE);
         }
     }
@@ -304,7 +315,7 @@ public class ReportsActivity extends BaseActivity {
 
         summaryCard.setVisibility(View.VISIBLE);
         compareCard.setVisibility(View.VISIBLE);
-        findViewById(R.id.budgetSectionCard).setVisibility(View.VISIBLE);
+        binding.budgetSectionCard.setVisibility(View.VISIBLE);
         if (!d.hasData() && !anyBarData) {
             statusMessage.setText(R.string.rep_no_data);
             statusMessage.setVisibility(View.VISIBLE);
@@ -571,31 +582,31 @@ public class ReportsActivity extends BaseActivity {
         }
         LayoutInflater inflater = LayoutInflater.from(this);
         for (ReportData.BudgetRow row : b.rows) {
-            View v = inflater.inflate(R.layout.item_report_budget, budgetContainer, false);
+            ItemReportBudgetBinding item = ItemReportBudgetBinding.inflate(inflater, budgetContainer, false);
             BudgetStatus s = row.status;
-            ((TextView) v.findViewById(R.id.budgetCategory)).setText(row.label);
-            BudgetUi.bindProgress((LinearProgressIndicator) v.findViewById(R.id.budgetProgress),
-                    (TextView) v.findViewById(R.id.budgetPercent), s);
-            ((TextView) v.findViewById(R.id.budgetLine1)).setText(getString(R.string.budget_line_spent,
+            item.budgetCategory.setText(row.label);
+            BudgetUi.bindProgress(item.budgetProgress, item.budgetPercent, s);
+            item.budgetLine1.setText(getString(R.string.budget_line_spent,
                     MoneyUtils.format(s.spentPaisa), MoneyUtils.format(s.budgetPaisa)));
-            ((TextView) v.findViewById(R.id.budgetLine2)).setText(s.isOverspent()
+            item.budgetLine2.setText(s.isOverspent()
                     ? getString(R.string.budget_line_over, MoneyUtils.format(-s.remainingPaisa), s.percentText)
                     : getString(R.string.budget_line_left, MoneyUtils.format(s.remainingPaisa), s.percentText));
-            budgetContainer.addView(v);
+            budgetContainer.addView(item.getRoot());
         }
     }
 
+    // ------------------------------------------------------------------ small helpers
 
     /** Adds a two-line row (title/subtitle on the left, value/sub-value on the right). */
     private void addRow(ViewGroup parent, String title, String subtitle, String value, int valueColor,
                         String valueSub, int valueSubColor) {
-        View row = LayoutInflater.from(this).inflate(R.layout.item_report_row, parent, false);
-        ((TextView) row.findViewById(R.id.rowTitle)).setText(title);
-        ((TextView) row.findViewById(R.id.rowSubtitle)).setText(subtitle);
-        TextView v = (TextView) row.findViewById(R.id.rowValue);
+        ItemReportRowBinding row = ItemReportRowBinding.inflate(LayoutInflater.from(this), parent, false);
+        row.rowTitle.setText(title);
+        row.rowSubtitle.setText(subtitle);
+        TextView v = row.rowValue;
         v.setText(value);
         v.setTextColor(valueColor);
-        TextView sub = (TextView) row.findViewById(R.id.rowValueSub);
+        TextView sub = row.rowValueSub;
         if (valueSub == null) {
             sub.setVisibility(View.GONE);
         } else {
@@ -603,7 +614,7 @@ public class ReportsActivity extends BaseActivity {
             sub.setTextColor(valueSubColor);
             sub.setVisibility(View.VISIBLE);
         }
-        parent.addView(row);
+        parent.addView(row.getRoot());
     }
 
     private int dp(int value) {
@@ -725,7 +736,7 @@ public class ReportsActivity extends BaseActivity {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == R.id.action_export_pdf) {
-
+            // Export exactly the period that is on screen.
             try {
                 export.startPdf(period);
             } catch (RuntimeException e) {

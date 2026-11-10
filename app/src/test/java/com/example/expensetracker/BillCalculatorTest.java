@@ -5,13 +5,15 @@ import static com.example.expensetracker.TestDays.d;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+
 import java.util.TimeZone;
 
 public class BillCalculatorTest {
-    private long TODAY;
+    private long TODAY; // set in setUp, after the time zone is fixed
     private TimeZone saved;
 
     @Before
@@ -43,8 +45,11 @@ public class BillCalculatorTest {
 
     @Test
     public void dueTimeOfDayDoesNotChangeTheDay() {
+        // a due date stored with a time component still counts as that calendar day
         assertEquals(BillState.DUE_TODAY, BillCalculator.state(bill(TODAY + 13 * 3_600_000L, false, 1), TODAY));
     }
+
+    // ---- reminder policy
 
     @Test
     public void reminderStartsOnTheLeadDay() {

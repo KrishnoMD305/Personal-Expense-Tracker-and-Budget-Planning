@@ -8,15 +8,17 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.TimeZone;
 
 public class DashboardCalculatorTest {
-    private long TODAY;
+    private long TODAY; // set in setUp, after the time zone is fixed
     private TimeZone saved;
 
     @Before
@@ -30,6 +32,8 @@ public class DashboardCalculatorTest {
     public void tearDown() {
         TimeZone.setDefault(saved);
     }
+
+    // ---------------------------------------------------------------- goals
 
     @Test
     public void emptyGoals() {
@@ -48,7 +52,7 @@ public class DashboardCalculatorTest {
         assertEquals(2, s.activeCount);
         assertEquals(400_000, s.totalTargetPaisa);
         assertEquals(125_000, s.totalSavedPaisa);
-        assertEquals(31, s.progress);
+        assertEquals(31, s.progress);          // 31.25% rounded down
         assertEquals("31.2", s.percentText);
         assertEquals(0, s.completedCount);
     }
@@ -58,8 +62,8 @@ public class DashboardCalculatorTest {
         DashboardCalculator.GoalsSummary s = DashboardCalculator.goals(Arrays.asList(
                 goal("Done", 100_000, 200_000, 0, false),
                 goal("Empty", 100_000, 0, 0, false)), TODAY);
-        assertEquals(200_000, s.totalSavedPaisa);
-        assertEquals(50, s.progress);
+        assertEquals(200_000, s.totalSavedPaisa); // real total saved
+        assertEquals(50, s.progress);             // but progress counts at most each target
         assertEquals(1, s.completedCount);
     }
 
@@ -81,8 +85,11 @@ public class DashboardCalculatorTest {
         assertEquals(1, late.overdueCount);
     }
 
+    // ------------------------------------------------------------ recurring
+
     @Test
     public void forecastCoversTomorrowThroughThirtyDaysAheadAndSkipsToday() {
+        // daily rule: Oct 18 .. Nov 16 = 30 occurrences; today's (Oct 17) is not counted
         RecurringRule daily = rule(Transaction.TYPE_EXPENSE, 10_000, RecurrenceCalculator.DAILY,
                 d(2026, 10, 1), 0, true);
         DashboardCalculator.RecurringSummary s = DashboardCalculator.recurring(
@@ -96,11 +103,11 @@ public class DashboardCalculatorTest {
     @Test
     public void forecastSplitsIncomeAndExpenseAndHonoursEndDatesAndPausedRules() {
         RecurringRule salary = rule(Transaction.TYPE_INCOME, 5_000_000, RecurrenceCalculator.MONTHLY,
-                d(2026, 1, 1), 0, true);
+                d(2026, 1, 1), 0, true);                              // Nov 1
         RecurringRule rent = rule(Transaction.TYPE_EXPENSE, 1_500_000, RecurrenceCalculator.MONTHLY,
-                d(2026, 1, 5), d(2026, 10, 31), true);
+                d(2026, 1, 5), d(2026, 10, 31), true);                // ended: nothing ahead
         RecurringRule gym = rule(Transaction.TYPE_EXPENSE, 200_000, RecurrenceCalculator.WEEKLY,
-                d(2026, 10, 3), 0, true);
+                d(2026, 10, 3), 0, true);                             // Oct 24, 31, Nov 7, 14
         RecurringRule paused = rule(Transaction.TYPE_EXPENSE, 999_999, RecurrenceCalculator.DAILY,
                 d(2026, 10, 1), 0, false);
         DashboardCalculator.RecurringSummary s = DashboardCalculator.recurring(
@@ -120,7 +127,7 @@ public class DashboardCalculatorTest {
                 d(2026, 11, 10), 0, true);
         DashboardCalculator.RecurringSummary s = DashboardCalculator.recurring(
                 Collections.singletonList(later), TODAY);
-        assertEquals(1, s.upcomingCount);
+        assertEquals(1, s.upcomingCount); // Nov 10 only (Nov 17 is beyond Nov 16)
         assertEquals(d(2026, 11, 10), s.nextMillis);
     }
 
@@ -130,15 +137,17 @@ public class DashboardCalculatorTest {
         assertEquals(-1, DashboardCalculator.recurring(Collections.emptyList(), TODAY).nextMillis);
     }
 
+    // ---------------------------------------------------------------- bills
+
     @Test
     public void billTotalsOverdueAndDueSoon() {
         DashboardCalculator.BillsSummary s = DashboardCalculator.bills(Arrays.asList(
-                        bill(d(2026, 10, 10), false, 100_000),
-                        bill(d(2026, 10, 16), false, 50_000),
-                        bill(TODAY, false, 20_000),
-                        bill(d(2026, 10, 23), false, 30_000),
-                        bill(d(2026, 10, 24), false, 70_000),
-                        bill(d(2026, 10, 12), true, 999_999)),
+                bill(d(2026, 10, 10), false, 100_000),  // overdue
+                bill(d(2026, 10, 16), false, 50_000),   // overdue
+                bill(TODAY, false, 20_000),             // due today -> due soon
+                bill(d(2026, 10, 23), false, 30_000),   // today + 6 -> due soon
+                bill(d(2026, 10, 24), false, 70_000),   // today + 7 -> NOT due soon
+                bill(d(2026, 10, 12), true, 999_999)),  // paid -> ignored
                 TODAY);
         assertEquals(5, s.unpaidCount);
         assertEquals(270_000, s.unpaidTotalPaisa);
@@ -146,7 +155,7 @@ public class DashboardCalculatorTest {
         assertEquals(150_000, s.overdueTotalPaisa);
         assertEquals(2, s.dueSoonCount);
         assertEquals(50_000, s.dueSoonTotalPaisa);
-        assertEquals(20_000, s.nextBill.amountPaisa);
+        assertEquals(20_000, s.nextBill.amountPaisa);   // today's bill is the next one
         assertEquals(0, s.nextBillDays);
     }
 

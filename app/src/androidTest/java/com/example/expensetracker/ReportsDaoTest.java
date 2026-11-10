@@ -15,6 +15,11 @@ import org.junit.Test;
 import java.util.Calendar;
 import java.util.List;
 
+/**
+ * Stage 3: checks that the report queries return exactly the right rows from a real (in-memory)
+ * Room database and that {@link ReportCalculator} produces the expected figures from them.
+ * Run with: ./gradlew connectedDebugAndroidTest (needs a device or emulator).
+ */
 public class ReportsDaoTest {
     private AppDatabase db;
 
@@ -56,7 +61,7 @@ public class ReportsDaoTest {
 
         List<Transaction> rows = db.transactionDao().getBetween(day(2026, 10, 1), day(2026, 11, 1));
         assertEquals(2, rows.size());
-        assertEquals(300, rows.get(0).amountPaisa);
+        assertEquals(300, rows.get(0).amountPaisa); // 31 Oct first
         assertEquals(200, rows.get(1).amountPaisa);
     }
 
@@ -96,9 +101,9 @@ public class ReportsDaoTest {
         assertEquals(5_000_000, d.current.incomePaisa);
         assertEquals(1_250_000, d.current.expensePaisa);
         assertEquals(3_750_000, d.current.netPaisa);
-        assertEquals(Long.valueOf(750), d.current.savingsRateTenths);
+        assertEquals(Long.valueOf(750), d.current.savingsRateTenths); // 75.0%
         assertEquals(500_000, d.previous.expensePaisa);
         assertTrue(d.budget.hasBudgets());
-        assertEquals("50", d.budget.rows.get(0).status.percentText);
+        assertEquals("50", d.budget.rows.get(0).status.percentText); // Food: 2,500 of 5,000
     }
 }

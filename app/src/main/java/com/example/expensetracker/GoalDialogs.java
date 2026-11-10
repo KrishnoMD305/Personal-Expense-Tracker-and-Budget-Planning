@@ -1,5 +1,7 @@
 package com.example.expensetracker;
 
+import com.example.expensetracker.databinding.DialogContributionBinding;
+import com.example.expensetracker.databinding.DialogGoalBinding;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
@@ -20,15 +22,15 @@ final class GoalDialogs {
 
     /** {@code existing == null} creates a new goal. */
     static void showGoalEditor(AppCompatActivity activity, SavingsGoal existing) {
-        View content = LayoutInflater.from(activity).inflate(R.layout.dialog_goal, null);
-        TextInputLayout nameLayout = content.findViewById(R.id.goalNameLayout);
-        TextInputEditText nameInput = content.findViewById(R.id.goalNameInput);
-        TextInputLayout targetLayout = content.findViewById(R.id.goalTargetLayout);
-        TextInputEditText targetInput = content.findViewById(R.id.goalTargetInput);
-        TextView formError = content.findViewById(R.id.goalFormError);
-        DateField deadline = new DateField(activity, content.findViewById(R.id.goalDeadlineButton),
+        DialogGoalBinding form = DialogGoalBinding.inflate(LayoutInflater.from(activity));
+        TextInputLayout nameLayout = form.goalNameLayout;
+        TextInputEditText nameInput = form.goalNameInput;
+        TextInputLayout targetLayout = form.goalTargetLayout;
+        TextInputEditText targetInput = form.goalTargetInput;
+        TextView formError = form.goalFormError;
+        DateField deadline = new DateField(activity, form.goalDeadlineButton,
                 existing == null ? 0 : existing.deadlineMillis, R.string.goal_no_deadline,
-                content.findViewById(R.id.goalDeadlineClear));
+                form.goalDeadlineClear);
         final long originalDeadline = existing == null ? 0 : existing.deadlineMillis;
         if (existing != null) {
             nameInput.setText(existing.name);
@@ -36,7 +38,7 @@ final class GoalDialogs {
         }
         AlertDialog dialog = new AlertDialog.Builder(activity)
                 .setTitle(existing == null ? R.string.goal_new : R.string.goal_edit)
-                .setView(content)
+                .setView(form.getRoot())
                 .setNegativeButton(android.R.string.cancel, null)
                 .setPositiveButton(android.R.string.ok, null) // real handler below keeps the dialog open on errors
                 .create();
@@ -80,15 +82,15 @@ final class GoalDialogs {
     }
 
     static void showContribution(AppCompatActivity activity, long goalId) {
-        View content = LayoutInflater.from(activity).inflate(R.layout.dialog_contribution, null);
-        TextInputLayout amountLayout = content.findViewById(R.id.contribAmountLayout);
-        TextInputEditText amountInput = content.findViewById(R.id.contribAmountInput);
-        TextInputEditText noteInput = content.findViewById(R.id.contribNoteInput);
-        DateField date = new DateField(activity, content.findViewById(R.id.contribDateButton),
+        DialogContributionBinding form = DialogContributionBinding.inflate(LayoutInflater.from(activity));
+        TextInputLayout amountLayout = form.contribAmountLayout;
+        TextInputEditText amountInput = form.contribAmountInput;
+        TextInputEditText noteInput = form.contribNoteInput;
+        DateField date = new DateField(activity, form.contribDateButton,
                 PlanDates.today(), R.string.date, null);
         AlertDialog dialog = new AlertDialog.Builder(activity)
                 .setTitle(R.string.goal_add_contribution)
-                .setView(content)
+                .setView(form.getRoot())
                 .setNegativeButton(android.R.string.cancel, null)
                 .setPositiveButton(android.R.string.ok, null)
                 .create();

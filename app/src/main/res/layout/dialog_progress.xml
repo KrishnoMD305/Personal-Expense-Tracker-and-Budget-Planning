@@ -3,22 +3,47 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:gravity="center_vertical"
-    android:orientation="horizontal"
+    android:orientation="vertical"
     android:padding="24dp">
 
-    <com.google.android.material.progressindicator.CircularProgressIndicator
-        android:layout_width="wrap_content"
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:indeterminate="true"
-        app:indicatorSize="32dp" />
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+
+        <com.google.android.material.progressindicator.CircularProgressIndicator
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:indeterminate="true"
+            app:indicatorSize="32dp" />
+
+        <TextView
+            android:id="@+id/progressMessage"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="20dp"
+            android:layout_weight="1"
+            android:textColor="?attr/etTextPrimary"
+            android:textSize="16sp" />
+    </LinearLayout>
+
+    <!-- Stage 7: shown by the foreground backup / restore job to display "n of m rows". -->
+    <com.google.android.material.progressindicator.LinearProgressIndicator
+        android:id="@+id/progressBar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:max="100"
+        android:visibility="gone"
+        app:trackCornerRadius="4dp" />
 
     <TextView
-        android:id="@+id/progressMessage"
-        android:layout_width="0dp"
+        android:id="@+id/progressDetail"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginStart="20dp"
-        android:layout_weight="1"
-        android:textColor="?attr/etTextPrimary"
-        android:textSize="16sp" />
+        android:layout_marginTop="6dp"
+        android:textColor="?attr/etTextTertiary"
+        android:textSize="13sp"
+        android:visibility="gone" />
 </LinearLayout>

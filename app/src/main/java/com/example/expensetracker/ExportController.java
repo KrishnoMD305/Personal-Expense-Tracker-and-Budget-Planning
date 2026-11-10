@@ -1,5 +1,6 @@
 package com.example.expensetracker;
 
+import com.example.expensetracker.databinding.DialogProgressBinding;
 import android.app.Activity;
 import android.content.ActivityNotFoundException;
 import android.content.ContentResolver;
@@ -356,9 +357,9 @@ final class ExportController {
 
     private void showProgress(int messageRes) {
         hideProgress();
-        View v = LayoutInflater.from(activity).inflate(R.layout.dialog_progress, null);
-        ((TextView) v.findViewById(R.id.progressMessage)).setText(messageRes);
-        progress = new AlertDialog.Builder(activity).setView(v).setCancelable(false).create();
+        DialogProgressBinding pb = DialogProgressBinding.inflate(LayoutInflater.from(activity));
+        pb.progressMessage.setText(messageRes);
+        progress = new AlertDialog.Builder(activity).setView(pb.getRoot()).setCancelable(false).create();
         progress.show();
     }
 

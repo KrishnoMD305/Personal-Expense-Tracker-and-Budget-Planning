@@ -2,6 +2,7 @@ package com.example.expensetracker;
 
 import android.app.Application;
 
+/** Application class: creates the notification channel, registers the WorkManager jobs and the app-lock tracking. */
 public class ExpenseTrackerApp extends Application {
     @Override
     public void onCreate() {

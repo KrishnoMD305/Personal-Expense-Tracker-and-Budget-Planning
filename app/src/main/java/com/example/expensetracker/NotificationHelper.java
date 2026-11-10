@@ -16,6 +16,8 @@ import androidx.core.content.ContextCompat;
 /** Notification channel, permission check and bill-reminder notifications. */
 public final class NotificationHelper {
     public static final String CHANNEL_BILLS = "bill_reminders";
+    /** Stage 7: progress and result of a cloud backup / restore (quiet: no sound, no pop-up). */
+    public static final String CHANNEL_BACKUP = "cloud_backup";
 
     private NotificationHelper() {}
 
@@ -26,7 +28,13 @@ public final class NotificationHelper {
                 context.getString(R.string.channel_bills_name), NotificationManager.IMPORTANCE_DEFAULT);
         channel.setDescription(context.getString(R.string.channel_bills_desc));
         NotificationManager nm = context.getSystemService(NotificationManager.class);
-        if (nm != null) nm.createNotificationChannel(channel);
+        if (nm != null) {
+            nm.createNotificationChannel(channel);
+            NotificationChannel backup = new NotificationChannel(CHANNEL_BACKUP,
+                    context.getString(R.string.channel_backup_name), NotificationManager.IMPORTANCE_LOW);
+            backup.setDescription(context.getString(R.string.channel_backup_desc));
+            nm.createNotificationChannel(backup);
+        }
     }
 
     /** True when the POST_NOTIFICATIONS permission (Android 13+) is granted. Always true below Android 13. */

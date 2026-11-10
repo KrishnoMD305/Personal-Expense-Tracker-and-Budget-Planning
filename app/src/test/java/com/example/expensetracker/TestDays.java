@@ -1,6 +1,8 @@
 package com.example.expensetracker;
+
 import java.util.Calendar;
 
+/** Test helper: start-of-day millis for a local calendar date (month is 1-based). */
 final class TestDays {
     private TestDays() {}
 

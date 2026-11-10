@@ -1,5 +1,6 @@
 package com.example.expensetracker;
 
+import com.example.expensetracker.databinding.ActivityAddTransactionBinding;
 import android.app.DatePickerDialog;
 import android.os.Bundle;
 import android.view.Menu;
@@ -23,7 +24,9 @@ import java.util.Calendar;
 import java.util.List;
 import java.util.Locale;
 
+/** Adds a transaction, or edits/deletes an existing one when {@link #EXTRA_TRANSACTION_ID} is set. */
 public class AddTransactionActivity extends BaseActivity {
+    private ActivityAddTransactionBinding binding;
     public static final String EXTRA_TRANSACTION_ID = "transaction_id";
     private static final String STATE_DATE = "date_millis";
     private static final String STATE_LOADED = "edit_loaded";
@@ -39,22 +42,23 @@ public class AddTransactionActivity extends BaseActivity {
     private long editingId = 0;
     private boolean editLoaded = false;
     private boolean busy = false;
-
+    /** Category to pre-select the next time the spinner is rebuilt (used when editing). */
     private String pendingCategory;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_add_transaction);
+        binding = ActivityAddTransactionBinding.inflate(getLayoutInflater());
+        setContentView(binding.getRoot());
         if (getSupportActionBar() != null) getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
-        typeGroup = findViewById(R.id.typeGroup);
-        amountLayout = findViewById(R.id.amountLayout);
-        amountInput = findViewById(R.id.amountInput);
-        noteInput = findViewById(R.id.noteInput);
-        categorySpinner = findViewById(R.id.categorySpinner);
-        dateButton = findViewById(R.id.dateButton);
-        saveButton = findViewById(R.id.saveButton);
+        typeGroup = binding.typeGroup;
+        amountLayout = binding.amountLayout;
+        amountInput = binding.amountInput;
+        noteInput = binding.noteInput;
+        categorySpinner = binding.categorySpinner;
+        dateButton = binding.dateButton;
+        saveButton = binding.saveButton;
 
         editingId = getIntent().getLongExtra(EXTRA_TRANSACTION_ID, 0);
         if (savedInstanceState != null) {
@@ -201,6 +205,7 @@ public class AddTransactionActivity extends BaseActivity {
                     }
                 }
                 if (found && Transaction.TYPE_EXPENSE.equals(type)) {
+                    // Budget position after this change, used for the 80% / 100% / overspend alert.
                     overview = BudgetRepository.loadMonth(db, MonthUtils.keyOf(dateMillis));
                 }
             } catch (RuntimeException e) {
@@ -249,7 +254,7 @@ public class AddTransactionActivity extends BaseActivity {
                 .show();
     }
 
-
+    // ------------------------------------------------------------------- delete
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {

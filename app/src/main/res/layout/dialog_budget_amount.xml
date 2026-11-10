@@ -6,6 +6,7 @@
     android:paddingStart="24dp"
     android:paddingTop="8dp"
     android:paddingEnd="24dp">
+
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/budgetAmountLayout"
         style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
@@ -13,6 +14,7 @@
         android:layout_height="wrap_content"
         android:hint="@string/budget_amount_hint"
         app:prefixText="৳ ">
+
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/budgetAmountInput"
             android:layout_width="match_parent"

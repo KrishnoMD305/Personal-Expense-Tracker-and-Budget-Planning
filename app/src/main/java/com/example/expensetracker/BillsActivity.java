@@ -1,10 +1,17 @@
 package com.example.expensetracker;
 
+import com.example.expensetracker.databinding.ActivityPlanListBinding;
+import com.example.expensetracker.databinding.DialogBillBinding;
+import android.content.ActivityNotFoundException;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.database.Cursor;
+import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.provider.ContactsContract;
 import android.provider.Settings;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
@@ -16,6 +23,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.PickVisualMediaRequest;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AlertDialog;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -25,14 +33,17 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 
+import java.io.File;
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-
+/** Bills: overdue / upcoming / paid lists, paid status, reminders and the notification permission. */
 public class BillsActivity extends BaseActivity {
+    private ActivityPlanListBinding binding;
     private static final String PREFS = "stage4_prefs";
     private static final String PREF_ASKED = "notification_permission_asked";
     /** Reminder lead times offered in the editor; must match R.array.reminder_labels. */
@@ -43,6 +54,36 @@ public class BillsActivity extends BaseActivity {
     private View banner;
     private List<Bill> lastBills;
     private List<String> expenseCategories;
+
+    // Stage 7: state of the open bill editor (null when no editor is open)
+    private DialogBillBinding editor;
+    private String editorReceipt = "";          // receipt file shown in the editor ("" = none)
+    private String editorOriginalReceipt = "";  // the bill's receipt when the editor was opened
+    private boolean editorSaved;
+    private File pendingCapture;
+
+    /** Content Provider: contact picker. ACTION_PICK on Phone.CONTENT_URI needs no READ_CONTACTS permission. */
+    private final ActivityResultLauncher<Intent> contactLauncher = registerForActivityResult(
+            new ActivityResultContracts.StartActivityForResult(), result -> {
+                if (result.getResultCode() == RESULT_OK && result.getData() != null
+                        && result.getData().getData() != null) {
+                    onContactPicked(result.getData().getData());
+                }
+            });
+
+    /** System photo picker (no storage permission needed). */
+    private final ActivityResultLauncher<PickVisualMediaRequest> photoLauncher = registerForActivityResult(
+            new ActivityResultContracts.PickVisualMedia(), uri -> {
+                if (uri != null) importReceipt(uri);
+            });
+
+    /** Camera: the photo is written to our own cache file through the FileProvider (no CAMERA permission). */
+    private final ActivityResultLauncher<Uri> cameraLauncher = registerForActivityResult(
+            new ActivityResultContracts.TakePicture(), taken -> {
+                File f = pendingCapture;
+                pendingCapture = null;
+                if (taken && f != null && f.isFile()) importReceipt(Uri.fromFile(f));
+            });
 
     private final ActivityResultLauncher<String> permissionLauncher = registerForActivityResult(
             new ActivityResultContracts.RequestPermission(), granted -> {
@@ -57,23 +98,24 @@ public class BillsActivity extends BaseActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_plan_list);
+        binding = ActivityPlanListBinding.inflate(getLayoutInflater());
+        setContentView(binding.getRoot());
         setTitle(R.string.bills);
         if (getSupportActionBar() != null) getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         expenseCategories = Arrays.asList(getResources().getStringArray(R.array.expense_categories));
 
-        emptyView = findViewById(R.id.planEmpty);
+        emptyView = binding.planEmpty;
         emptyView.setText(R.string.bills_empty);
-        ((TextView) findViewById(R.id.planIntro)).setText(R.string.bills_intro);
-        banner = findViewById(R.id.notifBanner);
-        findViewById(R.id.notifBannerButton).setOnClickListener(v -> onEnableNotifications());
+        binding.planIntro.setText(R.string.bills_intro);
+        banner = binding.notifBanner;
+        binding.notifBannerButton.setOnClickListener(v -> onEnableNotifications());
 
-        RecyclerView list = findViewById(R.id.planList);
+        RecyclerView list = binding.planList;
         adapter = new PlanRowAdapter(row -> showOptions((Bill) row.tag));
         list.setLayoutManager(new LinearLayoutManager(this));
         list.setAdapter(adapter);
 
-        FloatingActionButton fab = findViewById(R.id.planFab);
+        FloatingActionButton fab = binding.planFab;
         fab.setContentDescription(getString(R.string.bill_new));
         fab.setOnClickListener(v -> showEditor(null));
 
@@ -128,13 +170,17 @@ public class BillsActivity extends BaseActivity {
         if (s == BillState.PAID) {
             line1 = getString(b.paymentTransactionId != 0 ? R.string.bill_paid_on_expense : R.string.bill_paid_on,
                     PlanDates.format(b.paidAt));
-            line2 = b.category;
+            line2 = b.category + receiptTag(b);
         } else {
             line1 = PlanText.billDue(this, b, today);
-            line2 = b.category + " • " + reminderLabel(b.reminderDaysBefore);
+            line2 = b.category + " • " + reminderLabel(b.reminderDaysBefore) + receiptTag(b);
         }
         return PlanRow.item("bill:" + b.id, b.name, MoneyUtils.format(b.amountPaisa), color, line1, line2,
                 PlanRow.NO_PROGRESS, 0, s == BillState.PAID, b);
+    }
+
+    private String receiptTag(Bill b) {
+        return b.receiptFile.isEmpty() ? "" : " • " + getString(R.string.bill_receipt_tag);
     }
 
     private String reminderLabel(int days) {
@@ -150,21 +196,26 @@ public class BillsActivity extends BaseActivity {
     // -------------------------------------------------------------------- actions
 
     private void showOptions(Bill b) {
+        List<CharSequence> labels = new ArrayList<>();
+        List<Runnable> actions = new ArrayList<>();
         if (b.paid) {
-            CharSequence[] items = {getString(R.string.bill_mark_unpaid), getString(R.string.delete)};
-            new AlertDialog.Builder(this).setTitle(b.name).setItems(items, (d, which) -> {
-                if (which == 0) confirmMarkUnpaid(b);
-                else confirmDelete(b);
-            }).show();
+            labels.add(getString(R.string.bill_mark_unpaid));
+            actions.add(() -> confirmMarkUnpaid(b));
         } else {
-            CharSequence[] items = {getString(R.string.bill_mark_paid), getString(R.string.edit),
-                    getString(R.string.delete)};
-            new AlertDialog.Builder(this).setTitle(b.name).setItems(items, (d, which) -> {
-                if (which == 0) confirmMarkPaid(b);
-                else if (which == 1) showEditor(b);
-                else confirmDelete(b);
-            }).show();
+            labels.add(getString(R.string.bill_mark_paid));
+            actions.add(() -> confirmMarkPaid(b));
+            labels.add(getString(R.string.edit));
+            actions.add(() -> showEditor(b));
         }
+        if (!b.receiptFile.isEmpty()) {
+            labels.add(getString(R.string.bill_receipt_view));
+            actions.add(() -> viewReceipt(b));
+        }
+        labels.add(getString(R.string.delete));
+        actions.add(() -> confirmDelete(b));
+        new AlertDialog.Builder(this).setTitle(b.name)
+                .setItems(labels.toArray(new CharSequence[0]), (d, which) -> actions.get(which).run())
+                .show();
     }
 
     private void confirmMarkPaid(Bill b) {
@@ -209,16 +260,31 @@ public class BillsActivity extends BaseActivity {
     // ------------------------------------------------------------------- editor
 
     private void showEditor(Bill existing) {
-        View content = LayoutInflater.from(this).inflate(R.layout.dialog_bill, null);
-        TextInputLayout nameLayout = content.findViewById(R.id.billNameLayout);
-        TextInputEditText nameInput = content.findViewById(R.id.billNameInput);
-        TextInputLayout amountLayout = content.findViewById(R.id.billAmountLayout);
-        TextInputEditText amountInput = content.findViewById(R.id.billAmountInput);
-        Spinner categorySpinner = content.findViewById(R.id.billCategorySpinner);
-        Spinner reminderSpinner = content.findViewById(R.id.billReminderSpinner);
-        TextView formError = content.findViewById(R.id.billFormError);
-        DateField due = new DateField(this, content.findViewById(R.id.billDueButton),
+        final DialogBillBinding form = DialogBillBinding.inflate(getLayoutInflater());
+        editor = form;
+        editorSaved = false;
+        editorOriginalReceipt = existing == null ? "" : existing.receiptFile;
+        editorReceipt = editorOriginalReceipt;
+        TextInputLayout nameLayout = form.billNameLayout;
+        TextInputEditText nameInput = form.billNameInput;
+        TextInputLayout amountLayout = form.billAmountLayout;
+        TextInputEditText amountInput = form.billAmountInput;
+        Spinner categorySpinner = form.billCategorySpinner;
+        Spinner reminderSpinner = form.billReminderSpinner;
+        TextView formError = form.billFormError;
+        DateField due = new DateField(this, form.billDueButton,
                 existing == null ? PlanDates.today() : existing.dueDateMillis, R.string.bill_due_date, null);
+
+        form.billPickContactButton.setOnClickListener(v -> pickContact());
+        form.receiptGalleryButton.setOnClickListener(v -> photoLauncher.launch(new PickVisualMediaRequest.Builder()
+                .setMediaType(ActivityResultContracts.PickVisualMedia.ImageOnly.INSTANCE).build()));
+        form.receiptCameraButton.setOnClickListener(v -> takePhoto());
+        form.receiptRemoveButton.setOnClickListener(v -> {
+            discardUnsavedReceipt();
+            editorReceipt = "";
+            refreshReceiptViews();
+        });
+        refreshReceiptViews();
 
         List<String> cats = new ArrayList<>(expenseCategories);
         if (existing != null && !cats.contains(existing.category)) cats.add(existing.category);
@@ -242,10 +308,14 @@ public class BillsActivity extends BaseActivity {
 
         AlertDialog dialog = new AlertDialog.Builder(this)
                 .setTitle(existing == null ? R.string.bill_new : R.string.bill_edit)
-                .setView(content)
+                .setView(form.getRoot())
                 .setNegativeButton(android.R.string.cancel, null)
                 .setPositiveButton(android.R.string.ok, null)
                 .create();
+        dialog.setOnDismissListener(d -> {
+            if (!editorSaved) discardUnsavedReceipt(); // a picture that was never saved must not pile up
+            if (editor == form) editor = null;
+        });
         dialog.show();
         Button ok = dialog.getButton(AlertDialog.BUTTON_POSITIVE);
         ok.setOnClickListener(v -> {
@@ -272,13 +342,17 @@ public class BillsActivity extends BaseActivity {
             }
             Object cat = categorySpinner.getSelectedItem();
             int reminder = REMINDER_DAYS[Math.max(0, reminderSpinner.getSelectedItemPosition())];
+            // null = receipt unchanged; "" = removed; otherwise the newly chosen photo
+            final String receiptChange = editorReceipt.equals(editorOriginalReceipt) ? null : editorReceipt;
             ok.setEnabled(false);
             BillRepository.save(this, existing == null ? 0 : existing.id, name, paisa,
-                    cat == null ? "" : cat.toString(), due.get(), reminder, err -> {
+                    cat == null ? "" : cat.toString(), due.get(), reminder, receiptChange, err -> {
                         if (err == null) {
+                            editorSaved = true;
                             dialog.dismiss();
                             Toast.makeText(this, R.string.bill_saved, Toast.LENGTH_SHORT).show();
                             maybeAskForNotifications();
+                            uploadReceiptsInBackground();
                         } else {
                             ok.setEnabled(true);
                             showError(formError, err);
@@ -286,6 +360,172 @@ public class BillsActivity extends BaseActivity {
                     });
         });
         nameInput.requestFocus();
+    }
+
+    // ----------------------------------------------------- contacts (Content Provider)
+
+    private void pickContact() {
+        Intent pick = new Intent(Intent.ACTION_PICK, ContactsContract.CommonDataKinds.Phone.CONTENT_URI);
+        try {
+            contactLauncher.launch(pick);
+        } catch (ActivityNotFoundException e) {
+            Toast.makeText(this, R.string.bill_no_contacts_app, Toast.LENGTH_LONG).show();
+        }
+    }
+
+    /** Reads the contact's display name from the Contacts provider with ContentResolver.query. */
+    private void onContactPicked(Uri contactUri) {
+        String name = null;
+        try (Cursor c = getContentResolver().query(contactUri,
+                new String[]{ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME}, null, null, null)) {
+            if (c != null && c.moveToFirst()) name = c.getString(0);
+        } catch (RuntimeException e) {
+            // the provider refused or vanished: handled below like "no name"
+        }
+        if (name == null || name.trim().isEmpty()) {
+            Toast.makeText(this, R.string.bill_contact_failed, Toast.LENGTH_SHORT).show();
+            return;
+        }
+        name = name.trim();
+        if (name.length() > 40) name = name.substring(0, 40); // the field's maxLength
+        if (editor != null) {
+            editor.billNameInput.setText(name);
+            if (editor.billNameInput.getText() != null) {
+                editor.billNameInput.setSelection(editor.billNameInput.getText().length());
+            }
+        }
+    }
+
+    // ----------------------------------------------------- receipt photo
+
+    private void takePhoto() {
+        try {
+            pendingCapture = ReceiptStore.captureTarget(this);
+            if (pendingCapture.exists()) {
+                //noinspection ResultOfMethodCallIgnored
+                pendingCapture.delete();
+            }
+            cameraLauncher.launch(ReceiptStore.captureUri(this, pendingCapture));
+        } catch (ActivityNotFoundException e) {
+            Toast.makeText(this, R.string.bill_no_camera_app, Toast.LENGTH_LONG).show();
+        } catch (IOException | RuntimeException e) {
+            Toast.makeText(this, R.string.bill_receipt_failed, Toast.LENGTH_LONG).show();
+        }
+    }
+
+    /** Copies the chosen / captured picture into the app's storage (background thread) and shows it. */
+    private void importReceipt(Uri source) {
+        if (editor == null) return;
+        editor.receiptStatus.setText(R.string.bill_receipt_saving);
+        final Context app = getApplicationContext();
+        AppDatabase.WRITE_EXECUTOR.execute(() -> {
+            String name = null;
+            try {
+                name = ReceiptStore.importFrom(app, source);
+            } catch (IOException | RuntimeException e) {
+                // reported below
+            }
+            final String stored = name;
+            runOnUiThread(() -> {
+                if (stored == null) {
+                    Toast.makeText(this, R.string.bill_receipt_failed, Toast.LENGTH_LONG).show();
+                    refreshReceiptViews();
+                } else if (editor == null) {
+                    ReceiptStore.delete(app, stored); // the editor was closed while the picture was being saved
+                } else {
+                    discardUnsavedReceipt(); // replaces an earlier, still unsaved pick
+                    editorReceipt = stored;
+                    refreshReceiptViews();
+                }
+            });
+        });
+    }
+
+    /** Deletes the editor's receipt file if it was picked in this editor and never saved. */
+    private void discardUnsavedReceipt() {
+        if (!editorReceipt.isEmpty() && !editorReceipt.equals(editorOriginalReceipt)) {
+            ReceiptStore.delete(this, editorReceipt);
+        }
+    }
+
+    private void refreshReceiptViews() {
+        DialogBillBinding f = editor;
+        if (f == null) return;
+        if (editorReceipt.isEmpty()) {
+            f.receiptPreview.setVisibility(View.GONE);
+            f.receiptStatus.setText(R.string.bill_receipt_none);
+            f.receiptRemoveButton.setEnabled(false);
+            return;
+        }
+        f.receiptRemoveButton.setEnabled(true);
+        Bitmap thumb = ReceiptStore.thumbnail(this, editorReceipt, 480);
+        if (thumb == null) {
+            f.receiptPreview.setVisibility(View.GONE);
+            f.receiptStatus.setText(R.string.bill_receipt_not_on_device);
+        } else {
+            f.receiptPreview.setImageBitmap(thumb);
+            f.receiptPreview.setVisibility(View.VISIBLE);
+            f.receiptStatus.setText(R.string.bill_receipt_attached);
+        }
+    }
+
+    private void viewReceipt(Bill b) {
+        if (ReceiptStore.exists(this, b.receiptFile)) {
+            openViewer(b.receiptFile);
+            return;
+        }
+        Toast.makeText(this, R.string.bill_receipt_downloading, Toast.LENGTH_SHORT).show();
+        final Context app = getApplicationContext();
+        CloudSync.IO.execute(() -> {
+            String error = null;
+            try {
+                ReceiptSync.ensureLocal(app, b);
+            } catch (CloudException e) {
+                error = e.getMessage();
+            }
+            final String err = error;
+            runOnUiThread(() -> {
+                if (isFinishing() || isDestroyed()) return;
+                if (err != null) Toast.makeText(this, err, Toast.LENGTH_LONG).show();
+                else openViewer(b.receiptFile);
+            });
+        });
+    }
+
+    private void openViewer(String file) {
+        try {
+            Intent view = new Intent(Intent.ACTION_VIEW)
+                    .setDataAndType(ReceiptStore.shareUri(this, file), "image/jpeg")
+                    .addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+            startActivity(view);
+        } catch (ActivityNotFoundException | IllegalArgumentException e) {
+            Toast.makeText(this, R.string.bill_no_image_viewer, Toast.LENGTH_LONG).show();
+        }
+    }
+
+    /** After saving: copy new receipt photos to Firebase Storage when signed in and online (silent otherwise). */
+    private void uploadReceiptsInBackground() {
+        final Context app = getApplicationContext();
+        if (!ReceiptSync.available(app) || DeviceStateReader.read(app).airplaneMode) return;
+        CloudSync.IO.execute(() -> {
+            ReceiptSync.Result r = ReceiptSync.uploadPending(app, null);
+            if (r.done > 0) CloudLog.log(app, CloudLog.ACTION_RECEIPT, CloudLog.RESULT_OK, r.done, "");
+            runOnUiThread(() -> {
+                if (isFinishing() || isDestroyed()) return;
+                if (r.failed > 0) {
+                    Toast.makeText(this, getString(R.string.bill_receipt_upload_failed,
+                            r.error == null ? "" : r.error), Toast.LENGTH_LONG).show();
+                } else if (r.done > 0) {
+                    Toast.makeText(this, R.string.bill_receipt_uploaded, Toast.LENGTH_SHORT).show();
+                }
+            });
+        });
+    }
+
+    @Override
+    protected void onDestroy() {
+        if (editor != null && !editorSaved) discardUnsavedReceipt();
+        super.onDestroy();
     }
 
     private static void showError(TextView view, String message) {
@@ -303,7 +543,7 @@ public class BillsActivity extends BaseActivity {
         banner.setVisibility(NotificationHelper.canNotify(this) ? View.GONE : View.VISIBLE);
     }
 
-
+    /** After the first bill is saved, ask once (Android 13+) so reminders can actually be shown. */
     private void maybeAskForNotifications() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU && !NotificationHelper.hasPermission(this)
                 && !prefs().getBoolean(PREF_ASKED, false)) {

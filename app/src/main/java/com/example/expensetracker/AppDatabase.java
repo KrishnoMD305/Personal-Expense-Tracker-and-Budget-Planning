@@ -17,10 +17,12 @@ import java.util.concurrent.Executors;
         RecurringRule.class, RecurringPosting.class, Bill.class},
         version = AppDatabase.VERSION, exportSchema = true)
 public abstract class AppDatabase extends RoomDatabase {
-    public static final int VERSION = 3;
+    /** Current Room schema version. Stage 7 adds two receipt columns to "bills" (see MIGRATION_3_4). */
+    public static final int VERSION = 4;
     public static final ExecutorService WRITE_EXECUTOR = Executors.newSingleThreadExecutor();
     private static volatile AppDatabase instance;
 
+    /** These statements must match exactly what Room generates for {@link Budget}. */
     public static final String SQL_CREATE_BUDGETS =
             "CREATE TABLE IF NOT EXISTS `budgets` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, "
                     + "`monthKey` TEXT NOT NULL, `category` TEXT NOT NULL, "
@@ -29,7 +31,10 @@ public abstract class AppDatabase extends RoomDatabase {
             "CREATE UNIQUE INDEX IF NOT EXISTS `index_budgets_monthKey_category` "
                     + "ON `budgets` (`monthKey`, `category`)";
 
-
+    /**
+     * v1 -> v2: adds the budgets table. The Stage 1 "transactions" table is not touched, so all
+     * existing user data is preserved.
+     */
     public static final Migration MIGRATION_1_2 = new Migration(1, 2) {
         @Override
         public void migrate(@NonNull SupportSQLiteDatabase db) {
@@ -38,6 +43,9 @@ public abstract class AppDatabase extends RoomDatabase {
         }
     };
 
+    // ------------------------------------------------------------------ Stage 4 (version 3)
+
+    /** These statements must match exactly what Room generates for the Stage 4 entities. */
     public static final String SQL_CREATE_SAVINGS_GOALS =
             "CREATE TABLE IF NOT EXISTS `savings_goals` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, "
                     + "`name` TEXT NOT NULL, `targetPaisa` INTEGER NOT NULL, `deadlineMillis` INTEGER NOT NULL, "
@@ -71,7 +79,10 @@ public abstract class AppDatabase extends RoomDatabase {
                     + "`paymentTransactionId` INTEGER NOT NULL, `lastNotifiedDay` INTEGER NOT NULL, "
                     + "`createdAt` INTEGER NOT NULL)";
 
-
+    /**
+     * v2 -> v3: adds the five Stage 4 tables. It only creates new tables, so the "transactions" and
+     * "budgets" tables (all existing user data) are never touched.
+     */
     public static final Migration MIGRATION_2_3 = new Migration(2, 3) {
         @Override
         public void migrate(@NonNull SupportSQLiteDatabase db) {
@@ -82,6 +93,20 @@ public abstract class AppDatabase extends RoomDatabase {
             db.execSQL(SQL_CREATE_RECURRING_POSTINGS);
             db.execSQL(SQL_CREATE_RECURRING_POSTINGS_INDEX);
             db.execSQL(SQL_CREATE_BILLS);
+        }
+    };
+
+    // ------------------------------------------------------------------ Stage 7 (version 4)
+
+    /**
+     * v3 -> v4: receipt photos for bills. Only adds two columns with an empty default, so every existing
+     * bill (and all other data) is kept. The defaults must match {@code @ColumnInfo(defaultValue = "''")} in {@link Bill}.
+     */
+    public static final Migration MIGRATION_3_4 = new Migration(3, 4) {
+        @Override
+        public void migrate(@NonNull SupportSQLiteDatabase db) {
+            db.execSQL("ALTER TABLE `bills` ADD COLUMN `receiptFile` TEXT NOT NULL DEFAULT ''");
+            db.execSQL("ALTER TABLE `bills` ADD COLUMN `receiptCloudPath` TEXT NOT NULL DEFAULT ''");
         }
     };
 
@@ -98,6 +123,8 @@ public abstract class AppDatabase extends RoomDatabase {
     public abstract RecurringPostingDao recurringPostingDao();
 
     public abstract BillDao billDao();
+
+    /** Stage 5: whole-table access for backup / restore / CSV export. No schema change (still version 3). */
     public abstract BackupDao backupDao();
 
     public static AppDatabase getInstance(Context context) {
@@ -105,8 +132,8 @@ public abstract class AppDatabase extends RoomDatabase {
             synchronized (AppDatabase.class) {
                 if (instance == null) {
                     instance = Room.databaseBuilder(context.getApplicationContext(),
-                                    AppDatabase.class, "expense_tracker.db")
-                            .addMigrations(MIGRATION_1_2, MIGRATION_2_3)
+                            AppDatabase.class, "expense_tracker.db")
+                            .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4)
                             .build();
                 }
             }

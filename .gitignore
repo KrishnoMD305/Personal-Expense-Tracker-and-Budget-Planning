@@ -4,3 +4,13 @@ local.properties
 .idea/
 build/
 .DS_Store
+*.apk
+*.aab
+captures/
+.externalNativeBuild/
+.cxx/
+
+# Stage 6: your own Firebase config (downloaded from the Firebase console). Remove this line if you want to commit it.
+app/google-services.json
+
+# Stage 7: receipt photos / temp captures are app-private and never part of the project

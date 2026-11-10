@@ -1,5 +1,6 @@
 package com.example.expensetracker;
 
+import com.example.expensetracker.databinding.ActivityGoalDetailBinding;
 import android.os.Bundle;
 import android.view.MenuItem;
 import android.view.View;
@@ -16,7 +17,9 @@ import com.google.android.material.progressindicator.LinearProgressIndicator;
 import java.util.ArrayList;
 import java.util.List;
 
+/** One goal: progress, contributions, contribution history, edit / archive / delete. */
 public class GoalDetailActivity extends BaseActivity {
+    private ActivityGoalDetailBinding binding;
     public static final String EXTRA_GOAL_ID = "goal_id";
 
     private long goalId;
@@ -30,35 +33,36 @@ public class GoalDetailActivity extends BaseActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_goal_detail);
+        binding = ActivityGoalDetailBinding.inflate(getLayoutInflater());
+        setContentView(binding.getRoot());
         if (getSupportActionBar() != null) getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         goalId = getIntent().getLongExtra(EXTRA_GOAL_ID, 0);
         if (goalId == 0) {
             finish();
             return;
         }
-        nameView = findViewById(R.id.goalName);
-        percentView = findViewById(R.id.goalPercent);
-        line1 = findViewById(R.id.goalLine1);
-        line2 = findViewById(R.id.goalLine2);
-        line3 = findViewById(R.id.goalLine3);
-        emptyView = findViewById(R.id.contributionEmpty);
-        progress = findViewById(R.id.goalProgress);
-        archiveButton = findViewById(R.id.archiveGoalButton);
+        nameView = binding.goalName;
+        percentView = binding.goalPercent;
+        line1 = binding.goalLine1;
+        line2 = binding.goalLine2;
+        line3 = binding.goalLine3;
+        emptyView = binding.contributionEmpty;
+        progress = binding.goalProgress;
+        archiveButton = binding.archiveGoalButton;
 
-        RecyclerView list = findViewById(R.id.contributionList);
+        RecyclerView list = binding.contributionList;
         adapter = new PlanRowAdapter(row -> confirmDeleteContribution((GoalContribution) row.tag));
         list.setLayoutManager(new LinearLayoutManager(this));
         list.setAdapter(adapter);
 
-        findViewById(R.id.addContributionButton).setOnClickListener(v -> {
+        binding.addContributionButton.setOnClickListener(v -> {
             if (current != null) GoalDialogs.showContribution(this, goalId);
         });
-        findViewById(R.id.editGoalButton).setOnClickListener(v -> {
+        binding.editGoalButton.setOnClickListener(v -> {
             if (current != null) GoalDialogs.showGoalEditor(this, current.goal);
         });
         archiveButton.setOnClickListener(v -> toggleArchive());
-        findViewById(R.id.deleteGoalButton).setOnClickListener(v -> confirmDeleteGoal());
+        binding.deleteGoalButton.setOnClickListener(v -> confirmDeleteGoal());
 
         GoalRepository.observeOne(this, goalId).observe(this, g -> {
             if (g == null) {
@@ -149,6 +153,7 @@ public class GoalDetailActivity extends BaseActivity {
                 .setPositiveButton(R.string.delete, (d, w) ->
                         GoalRepository.delete(this, goalId, err -> {
                             if (err != null) Toast.makeText(this, err, Toast.LENGTH_SHORT).show();
+                            // success: the observer sees the goal disappear and closes this screen
                         }))
                 .show();
     }

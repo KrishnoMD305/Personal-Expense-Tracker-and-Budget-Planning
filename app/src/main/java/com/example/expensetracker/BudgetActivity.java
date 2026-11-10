@@ -1,5 +1,7 @@
 package com.example.expensetracker;
 
+import com.example.expensetracker.databinding.DialogBudgetAmountBinding;
+import com.example.expensetracker.databinding.ActivityBudgetBinding;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
@@ -22,9 +24,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-
+/** Monthly budget setup, category budgets, and live progress (spent / remaining / % used). */
 public class BudgetActivity extends BaseActivity {
+    private ActivityBudgetBinding binding;
     private static final String STATE_MONTH = "month";
+    /** Navigation limit so month keys always stay valid. */
     private static final int MAX_MONTHS_AWAY = 600;
 
     private String monthKey;
@@ -32,39 +36,41 @@ public class BudgetActivity extends BaseActivity {
     private List<String> categories;
     private BudgetAdapter adapter;
 
-    private TextView monthLabel, overallPercent, overallBudgetValue, overallSpentValue, overallRemainingLabel, overallRemainingValue, alertBanner;
+    private TextView monthLabel, overallPercent, overallBudgetValue, overallSpentValue,
+            overallRemainingLabel, overallRemainingValue, alertBanner;
     private LinearProgressIndicator overallProgress;
     private Button setOverallButton, copyButton;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_budget);
+        binding = ActivityBudgetBinding.inflate(getLayoutInflater());
+        setContentView(binding.getRoot());
         if (getSupportActionBar() != null) getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         categories = Arrays.asList(getResources().getStringArray(R.array.expense_categories));
         String saved = savedInstanceState == null ? null : savedInstanceState.getString(STATE_MONTH);
         monthKey = MonthUtils.isValidKey(saved) ? saved : MonthUtils.current();
 
-        monthLabel = findViewById(R.id.monthLabel);
-        overallPercent = findViewById(R.id.overallPercent);
-        overallBudgetValue = findViewById(R.id.overallBudgetValue);
-        overallSpentValue = findViewById(R.id.overallSpentValue);
-        overallRemainingLabel = findViewById(R.id.overallRemainingLabel);
-        overallRemainingValue = findViewById(R.id.overallRemainingValue);
-        alertBanner = findViewById(R.id.alertBanner);
-        overallProgress = findViewById(R.id.overallProgress);
-        setOverallButton = findViewById(R.id.setOverallButton);
-        copyButton = findViewById(R.id.copyButton);
+        monthLabel = binding.monthLabel;
+        overallPercent = binding.overallPercent;
+        overallBudgetValue = binding.overallBudgetValue;
+        overallSpentValue = binding.overallSpentValue;
+        overallRemainingLabel = binding.overallRemainingLabel;
+        overallRemainingValue = binding.overallRemainingValue;
+        alertBanner = binding.alertBanner;
+        overallProgress = binding.overallProgress;
+        setOverallButton = binding.setOverallButton;
+        copyButton = binding.copyButton;
 
-        RecyclerView list = findViewById(R.id.budgetList);
+        RecyclerView list = binding.budgetList;
         adapter = new BudgetAdapter(row -> showAmountDialog(row.category,
                 getString(R.string.budget_for, row.category), row.status.budgetPaisa));
         list.setLayoutManager(new LinearLayoutManager(this));
         list.setAdapter(adapter);
 
-        findViewById(R.id.prevMonth).setOnClickListener(v -> changeMonth(-1));
-        findViewById(R.id.nextMonth).setOnClickListener(v -> changeMonth(1));
+        binding.prevMonth.setOnClickListener(v -> changeMonth(-1));
+        binding.nextMonth.setOnClickListener(v -> changeMonth(1));
         setOverallButton.setOnClickListener(v -> {
             MonthOverview o = lastOverview;
             showAmountDialog(Budget.OVERALL, getString(R.string.monthly_budget),
@@ -142,9 +148,9 @@ public class BudgetActivity extends BaseActivity {
 
     /** Dialog to set, change or remove one budget. Validation errors are shown inline. */
     private void showAmountDialog(String category, String title, long currentPaisa) {
-        View content = LayoutInflater.from(this).inflate(R.layout.dialog_budget_amount, null);
-        TextInputLayout layout = content.findViewById(R.id.budgetAmountLayout);
-        TextInputEditText input = content.findViewById(R.id.budgetAmountInput);
+        DialogBudgetAmountBinding dialogBinding = DialogBudgetAmountBinding.inflate(getLayoutInflater());
+        TextInputLayout layout = dialogBinding.budgetAmountLayout;
+        TextInputEditText input = dialogBinding.budgetAmountInput;
         if (currentPaisa > 0) {
             input.setText(BigDecimal.valueOf(currentPaisa, 2).toPlainString());
             if (input.getText() != null) input.setSelection(input.getText().length());
@@ -152,7 +158,7 @@ public class BudgetActivity extends BaseActivity {
         final String month = monthKey;
         AlertDialog.Builder b = new AlertDialog.Builder(this)
                 .setTitle(title)
-                .setView(content)
+                .setView(dialogBinding.getRoot())
                 .setNegativeButton(android.R.string.cancel, null)
                 .setPositiveButton(android.R.string.ok, null); // real handler set below (keeps dialog open on error)
         if (currentPaisa > 0) {
